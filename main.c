@@ -230,50 +230,56 @@ void SetLED(unsigned char led) {
 
 /**
  * Increment points if points are earned and set the LEDs
+ * 10 points given if player starts or ends on time
+ * 3 points if starts or ends sort of on time
  * param dir: 0 if button pressed/mic blown and 1 if released
+ *
+ *
+ * Note: if notes are shorter than 300ms there may be problems
  */
 void CalcScore(unsigned char dir) {
-    static unsigned char currentNote = 0; // index for demo_song
+    static int currentNote = 0; // index for demo_song
+    static int completedNote = -1;
+    static uint8_t noteScore = 0; // reset for every note
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
     Note note = demo_song[currentNote];
 
-    if (dir == 0) { // start note
-        long diff = abs(curr_time_ms - note.start_ms);
-        if (diff < 300) { // hit
-            if (diff < 80) { // great
-                g_Score += 10;
-                SetLED(GREEN_LED);
-            } else { // ok
-                g_Score += 3;
-                SetLED(BLUE_LED);
-            }
-        } else if (curr_time_ms - note.start_ms > 300) { // if too late...
-            SetLED(RED_LED);
+    int compareVal; // this is either the note start time or end time
+
+
+    if (dir == 0) {                         // start note
+        // get the currently applicable note
+        while (curr_time_ms > note.start_ms + note.length_ms || curr_time_ms > note.start_ms + 300) {
             currentNote++;
+            note = demo_song[currentNote];
+        }
 
-            // check if on time for next note !!!! RECURSION ALERT !!!!!!!
-            CalcScore(0);
-        } else {
-            // if too early do nothing
+        compareVal = note.start_ms;
+    } else {                                // end note
+
+        compareVal = note.start_ms + note.length_ms;
+    }
+
+    // score
+    if (currentNote > completedNote) {
+        long diff = abs(curr_time_ms - compareVal);
+        if (diff < 80) {         // great
+            g_Score += 10;
+            noteScore += 10;
+            SetLED(GREEN_LED);
+        } else if (diff < 300) { // ok
+            g_Score += 3;
+            noteScore += 3;
+            SetLED(BLUE_LED);
+        } else {                 // bad
             SetLED(RED_LED);
         }
 
+    }
 
-    } else if (dir == 1) { //end note
-        int note_end_ms = note.start_ms + note.length_ms;
-        long diff = abs(curr_time_ms - note_end_ms);
-        if (diff < 300) { // hit
-            if (diff < 80) { // great
-                g_Score += 10;
-                SetLED(GREEN_LED);
-            } else { // ok
-                g_Score += 3;
-                SetLED(BLUE_LED);
-            }
-        } else {
-            SetLED(RED_LED);
-        }
-
+    if (dir == 1 && noteScore > 0) {
+        completedNote = currentNote;
+        noteScore = 0;
     }
 }
 
@@ -388,7 +394,6 @@ void main()
         while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
         unsigned int volume = (ADCFIFORead(ADC_BASE, ADC_CH_1) >> 2) & 0xFFF;
 
-        Report("%x\n\r", volume);
         if (volume >= BLOW_THRESHOLD) {
             blow_age = 0;
         } else if (blow_age < BLOW_EXPIRY) {
@@ -397,7 +402,6 @@ void main()
 
         // draw bugle
         int bugle_pos = CalcBuglePosition(nd);
-        Report("bugle_pos: %u\n\r", bugle_pos);
         DrawBugle(bugle_pos);
 
         // play/stop buzzer
