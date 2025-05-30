@@ -279,7 +279,7 @@ void CalcScore(unsigned char dir) {
 
 void DrawScore() {
     char digits[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    unsigned char x = OLED_WIDTH - 24;
+    unsigned char x = OLED_WIDTH - 19;
     unsigned char y = OLED_HEIGHT - miku.height - 8;
     unsigned char hundred = g_Score / 100;
     unsigned char ten = (g_Score - (hundred * 100)) / 10;
