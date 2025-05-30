@@ -28,7 +28,7 @@ void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_colo
 
 void DrawBugle(int currPos)
 {
-    static int prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH;
+    static int prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH - BUGLE_WIDTH;
     if (currPos != prevPos) {
         DrawSprite((const Sprite*)&bugle, currPos, OLED_HEIGHT - miku.height + 2, 0x0000);
 
