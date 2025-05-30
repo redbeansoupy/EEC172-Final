@@ -201,18 +201,10 @@ int CalcBuglePosition(NunchukData nd) {
     int newPos;
 
     uint16_t accelZ = GetAccelZ(nd) - 10;
-    accelZ = CLAMP(accelZ, 460, 820);
-    Report("accel: %u\n\r", accelZ);
+    newPos = (700 - accelZ) / 2; // 700 is tuned parameter for player comfort
 
-    if (accelZ > 660) {
-        newPos = prevPos + ((accelZ - 660) >> 3);
-    } else if (accelZ < 620) {
-        newPos = prevPos - ((620 - accelZ) >> 3);
-    } else {
-        newPos = prevPos;
-    }
-
-    newPos = CLAMP(newPos, miku.width, OLED_WIDTH - bugle.width);
+    newPos = (newPos + prevPos * 3) / 4;
+    newPos = CLAMP(newPos, 10, OLED_WIDTH - miku.width - bugle.width);
     prevPos = newPos;
     return newPos;
 }
@@ -270,7 +262,7 @@ void main()
 
     // clear and draw miku
     fillScreen(BG_COLOR);
-    DrawSprite((const Sprite*) &miku, 0, OLED_HEIGHT - miku.height, BG_COLOR);
+    DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
     g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768;
 
     while(true)
@@ -316,6 +308,7 @@ void main()
 
         // draw bugle
         int bugle_pos = CalcBuglePosition(nd);
+        Report("bugle_pos: %u\n\r", bugle_pos);
         DrawBugle(bugle_pos);
 
         // play/stop buzzer

@@ -28,17 +28,17 @@ void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_colo
 
 void DrawBugle(int currPos)
 {
-    static int prevPos = OLED_WIDTH - BUGLE_WIDTH;
+    static int prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH;
     if (currPos != prevPos) {
         DrawSprite((const Sprite*)&bugle, currPos, OLED_HEIGHT - miku.height + 2, 0x0000);
 
         // cover up bugle
-        if (currPos < prevPos) {
-            fillRect(currPos+bugle.width, OLED_HEIGHT-miku.height+2, OLED_WIDTH-(currPos+bugle.width), bugle.height, BG_COLOR);
+        if (currPos > prevPos) {
+            fillRect(prevPos, OLED_HEIGHT-miku.height+2, currPos - prevPos, bugle.height, BG_COLOR);
         } else {
-            fillRect(prevPos, OLED_HEIGHT-miku.height+2, currPos-prevPos, 4, BG_COLOR);
-            fillRect(prevPos, OLED_HEIGHT-miku.height+6, currPos-prevPos, 2, BUGLE_COLOR);
-            fillRect(prevPos, OLED_HEIGHT-miku.height+8, currPos-prevPos, 4, BG_COLOR);
+            fillRect(currPos + BUGLE_WIDTH, OLED_HEIGHT-miku.height+2, prevPos - currPos, 4, BG_COLOR);
+            fillRect(currPos + BUGLE_WIDTH, OLED_HEIGHT-miku.height+6, prevPos - currPos, 2, BUGLE_COLOR);
+            fillRect(currPos + BUGLE_WIDTH, OLED_HEIGHT-miku.height+8, prevPos - currPos, 4, BG_COLOR);
         }
     }
     prevPos = currPos;
