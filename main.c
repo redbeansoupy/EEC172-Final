@@ -107,6 +107,10 @@
 #define SYS_CLOCK                80000000
 #define CLAMP(val, min, max) (val < min) ? (min) : (val > max) ? (max) : (val)
 
+#define RED_LED                  0x2
+#define GREEN_LED                0x80
+#define BLUE_LED                 0x40
+
 #if defined(ccs)
 extern void (* const g_pfnVectors[])(void);
 #endif
@@ -115,6 +119,7 @@ extern uVectorEntry __vector_table;
 #endif
 
 extern int g_startTimeMS;
+unsigned int g_Score = 0;
 
 //****************************************************************************
 //                      LOCAL FUNCTION DEFINITIONS
@@ -209,6 +214,82 @@ int CalcBuglePosition(NunchukData nd) {
     return newPos;
 }
 
+/**
+ * Set one LED and turn others off
+ * param led: macro RED_LED, GREEN_LED, or BLUE_LED
+ */
+void SetLED(unsigned char led) {
+    // turn all off
+    GPIOPinWrite(GPIOA3_BASE, 0x2, 0); // RED
+    GPIOPinWrite(GPIOA3_BASE, 0x80, 0); // GREEN
+    GPIOPinWrite(GPIOA3_BASE, 0x40, 0); // BLUE
+
+    // turn on
+    GPIOPinWrite(GPIOA3_BASE, led, led);
+}
+
+/**
+ * Increment points if points are earned and set the LEDs
+ * param dir: 0 if button pressed/mic blown and 1 if released
+ */
+void CalcScore(unsigned char dir) {
+    static unsigned char currentNote = 0; // index for demo_song
+    long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
+    Note note = demo_song[currentNote];
+
+    if (dir == 0) { // start note
+        long diff = abs(curr_time_ms - note.start_ms);
+        if (diff < 300) { // hit
+            if (diff < 80) { // great
+                g_Score += 10;
+                SetLED(GREEN_LED);
+            } else { // ok
+                g_Score += 3;
+                SetLED(BLUE_LED);
+            }
+        } else if (curr_time_ms - note.start_ms > 300) { // if too late...
+            SetLED(RED_LED);
+            currentNote++;
+
+            // check if on time for next note !!!! RECURSION ALERT !!!!!!!
+            CalcScore(0);
+        } else {
+            // if too early do nothing
+            SetLED(RED_LED);
+        }
+
+
+    } else if (dir == 1) { //end note
+        int note_end_ms = note.start_ms + note.length_ms;
+        long diff = abs(curr_time_ms - note_end_ms);
+        if (diff < 300) { // hit
+            if (diff < 80) { // great
+                g_Score += 10;
+                SetLED(GREEN_LED);
+            } else { // ok
+                g_Score += 3;
+                SetLED(BLUE_LED);
+            }
+        } else {
+            SetLED(RED_LED);
+        }
+
+    }
+}
+
+void DrawScore() {
+    char digits[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    unsigned char x = OLED_WIDTH - 24;
+    unsigned char y = OLED_HEIGHT - miku.height - 8;
+    unsigned char hundred = g_Score / 100;
+    unsigned char ten = (g_Score - (hundred * 100)) / 10;
+    unsigned char one = g_Score - (hundred * 100) - (ten * 10);
+
+    drawChar(x, y, digits[hundred], 0xFFFFF, BG_COLOR, 1);
+    drawChar(x + 6, y, digits[ten], 0xFFFFF, BG_COLOR, 1);
+    drawChar(x + 12, y, digits[one],  0xFFFFF, BG_COLOR, 1);
+}
+
 void InitConfig()
 {
     // board configurations
@@ -240,6 +321,11 @@ void InitConfig()
     ADCTimerEnable(ADC_BASE);
     ADCEnable(ADC_BASE);
     ADCChannelEnable(ADC_BASE, ADC_CH_1);
+
+    // GPIO LED (turn off)
+    GPIOPinWrite(GPIOA3_BASE, 0x2, 0); // RED
+    GPIOPinWrite(GPIOA3_BASE, 0x80, 0); // GREEN
+    GPIOPinWrite(GPIOA3_BASE, 0x40, 0); // BLUE
 }
 
 void main()
@@ -264,6 +350,9 @@ void main()
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
     g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768;
+
+    // keep track of if button is pressed or not
+    unsigned char isPressed = 0;
 
     while(true)
     {
@@ -315,10 +404,19 @@ void main()
         long frequency = (float) bugle_pos * (750.0 / 128.0) + 250;
         if (!nd.button_z || blow_age < BLOW_EXPIRY) {
             EnableBuzzer(frequency);
+            if (!isPressed) {
+                isPressed = 1;
+                CalcScore(0);
+            }
         } else {
             DisableBuzzer();
+            if (isPressed) {
+                isPressed = 0;
+                CalcScore(1);
+            }
         }
 
+        DrawScore();
         DrawNotes();
     }
 }
