@@ -233,11 +233,12 @@ void SetLED(unsigned char led) {
  * 10 points given if player starts or ends on time
  * 3 points if starts or ends sort of on time
  * param dir: 0 if button pressed/mic blown and 1 if released
+ * param buglePos: BUGLE!!!!! (bugle position, left side. player should align edge with note)
  *
  *
  * Note: if notes are shorter than 300ms there may be problems
  */
-void CalcScore(unsigned char dir) {
+void CalcScore(unsigned char dir, int buglePos) {
     static int currentNote = 0; // index for demo_song
     static int completedNote = -1;
     static uint8_t noteScore = 0; // reset for every note
@@ -262,17 +263,19 @@ void CalcScore(unsigned char dir) {
 
     // score
     if (currentNote > completedNote) {
-        long diff = abs(curr_time_ms - compareVal);
-        if (diff < 80) {         // great
-            g_Score += 10;
-            noteScore += 10;
-            SetLED(GREEN_LED);
-        } else if (diff < 300) { // ok
-            g_Score += 3;
-            noteScore += 3;
-            SetLED(BLUE_LED);
-        } else {                 // bad
-            SetLED(RED_LED);
+        if (buglePos > note.x - 3 && buglePos < note.x + 5) {
+            long diff = abs(curr_time_ms - compareVal);
+            if (diff < 80) {         // great
+                g_Score += 10;
+                noteScore += 10;
+                SetLED(GREEN_LED);
+            } else if (diff < 300) { // ok
+                g_Score += 3;
+                noteScore += 3;
+                SetLED(BLUE_LED);
+            } else {                 // bad
+                SetLED(RED_LED);
+            }
         }
 
     }
@@ -410,13 +413,13 @@ void main()
             EnableBuzzer(frequency);
             if (!isPressed) {
                 isPressed = 1;
-                CalcScore(0);
+                CalcScore(0, bugle_pos);
             }
         } else {
             DisableBuzzer();
             if (isPressed) {
                 isPressed = 0;
-                CalcScore(1);
+                CalcScore(1, bugle_pos);
             }
         }
 
