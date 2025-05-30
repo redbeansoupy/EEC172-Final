@@ -24,6 +24,7 @@ typedef struct {
 int NunchukHandshake(void);
 int NunchukGetData(unsigned char *buf);
 int CalculatePosition(NunchukData nd, int currentPos);
+int NunchukRead(NunchukData *nd);
 
 uint16_t GetAccelX(const NunchukData nd);
 uint16_t GetAccelY(const NunchukData nd);

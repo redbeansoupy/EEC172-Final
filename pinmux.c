@@ -60,11 +60,13 @@ void PinMuxConfig(void)
     PinModeSet(PIN_04, PIN_MODE_0);
     PinModeSet(PIN_15, PIN_MODE_0);
     PinModeSet(PIN_18, PIN_MODE_0);
+    PinModeSet(PIN_21, PIN_MODE_0);
+    PinModeSet(PIN_45, PIN_MODE_0);
     PinModeSet(PIN_50, PIN_MODE_0);
     PinModeSet(PIN_52, PIN_MODE_0);
+    PinModeSet(PIN_53, PIN_MODE_0);
     PinModeSet(PIN_55, PIN_MODE_0);
     PinModeSet(PIN_57, PIN_MODE_0);
-    PinModeSet(PIN_59, PIN_MODE_0);
     PinModeSet(PIN_60, PIN_MODE_0);
     PinModeSet(PIN_63, PIN_MODE_0);
     
@@ -77,36 +79,25 @@ void PinMuxConfig(void)
     PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
-    PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK);
-
 
     PinTypeUART(PIN_55, PIN_MODE_3); // PIN_55 - UART0 UART0_TX
     PinTypeUART(PIN_57, PIN_MODE_3); // PIN_57 - UART0 UART0_RX
 
     PinTypeI2C(PIN_01, PIN_MODE_1); // PIN_01 - I2C0 I2C_SCL
     PinTypeI2C(PIN_02, PIN_MODE_1); // PIN_02 - I2C0 I2C_SDA
+    PinTypeGPIO(PIN_59, PIN_MODE_0, false); // PIN_59 - GPIO NUNCHUK VCC
+    GPIODirModeSet(GPIOA0_BASE, 0x10, GPIO_DIR_MODE_OUT);
 
-    PinTypeGPIO(PIN_03, PIN_MODE_0, false); // PIN_03 - OLED RESET
+    PinTypeGPIO(PIN_03, PIN_MODE_0, false); // PIN_03 - GPIO OLED RESET
     GPIODirModeSet(GPIOA1_BASE, 0x10, GPIO_DIR_MODE_OUT);
     PinTypeSPI(PIN_05, PIN_MODE_7); // PIN_05 - SPI0 GSPI_CLK
     PinTypeSPI(PIN_06, PIN_MODE_7); // PIN_06 - SPI0 GSPI_MISO
     PinTypeSPI(PIN_07, PIN_MODE_7); // PIN_07 - SPI0 GSPI_MOSI
     PinTypeSPI(PIN_08, PIN_MODE_7); // PIN_08 - SPI0 GSPI_CS
     PinTypeADC(PIN_58, PIN_MODE_255); // PIN_08 - ADC_CH1
-    PinTypeGPIO(PIN_61, PIN_MODE_0, false); // PIN_61 - OLED CS
+    PinTypeGPIO(PIN_61, PIN_MODE_0, false); // PIN_61 - GPIO OLED CS
     GPIODirModeSet(GPIOA0_BASE, 0x40, GPIO_DIR_MODE_OUT);
-    PinTypeGPIO(PIN_62, PIN_MODE_0, false); // PIN_62 - OLED D/C#
+    PinTypeGPIO(PIN_62, PIN_MODE_0, false); // PIN_62 - GPIO OLED D/C#
     GPIODirModeSet(GPIOA0_BASE, 0x80, GPIO_DIR_MODE_OUT);
     PinTypeTimer(PIN_64, PIN_MODE_3); // PIN_64 - TIMERPWM5 GT_PWM05
-
-    // LED GPIO
-    PinTypeGPIO(PIN_21, PIN_MODE_0, false); // RED
-    GPIODirModeSet(GPIOA3_BASE, 0x2, GPIO_DIR_MODE_OUT);
-
-    PinTypeGPIO(PIN_45, PIN_MODE_0, false); // GREEN
-    GPIODirModeSet(GPIOA3_BASE, 0x80, GPIO_DIR_MODE_OUT);
-
-    PinTypeGPIO(PIN_53, PIN_MODE_0, false); // BLUE
-    GPIODirModeSet(GPIOA3_BASE, 0x40, GPIO_DIR_MODE_OUT);
-
 }

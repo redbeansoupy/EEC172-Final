@@ -93,18 +93,14 @@
 //*****************************************************************************
 //                      MACRO DEFINITIONS
 //*****************************************************************************
-#define APPLICATION_VERSION     "1.4.0"
-#define APP_NAME                "Nunchuk Demo"
-#define RETERR_IF_TRUE(condition) {if(condition) return -1;}
-#define RET_IF_ERR(Func)          {int ret = (Func); \
-                                   if (SUCCESS != ret) \
-                                     return  ret;}
+#define APPLICATION_VERSION     "1.0.0"
+#define APP_NAME                "Bugle Champion"
 
+#define SYS_CLOCK                80000000
 #define SPI_IF_BIT_RATE          4000000
 #define NUNCHUK_ADDR             0x52
 #define BLOW_EXPIRY              6
 #define BLOW_THRESHOLD           0xB00
-#define SYS_CLOCK                80000000
 #define CLAMP(val, min, max) (val < min) ? (min) : (val > max) ? (max) : (val)
 
 #if defined(ccs)
@@ -140,10 +136,10 @@ void OLED_Config()
                      SPI_TURBO_OFF |
                      SPI_CS_ACTIVELOW |
                      SPI_WL_8));
-    MAP_GPIOPinWrite(GPIOA1_BASE, 0x4, 0xFF); // CS HIGH
+    MAP_GPIOPinWrite(GPIOA1_BASE, 0x4, 0x04); // CS HIGH
     MAP_SPIEnable(GSPI_BASE);
     MAP_SPICSEnable(GSPI_BASE);
-    MAP_GPIOPinWrite(GPIOA1_BASE, 0x4, 0x000); // CS LOW
+    MAP_GPIOPinWrite(GPIOA1_BASE, 0x4, 0x00); // CS LOW
 }
 
 //*****************************************************************************
@@ -195,14 +191,12 @@ void DisableBuzzer()
     TimerDisable(TIMERA2_BASE,TIMER_B);
 }
 
-
 int CalcBuglePosition(NunchukData nd) {
     static int prevPos = MIKU_WIDTH;
     int newPos;
 
     uint16_t accelZ = GetAccelZ(nd) - 10;
     accelZ = CLAMP(accelZ, 460, 820);
-    Report("accel: %u\n\r", accelZ);
 
     if (accelZ > 660) {
         newPos = prevPos + ((accelZ - 660) >> 3);
@@ -248,6 +242,9 @@ void InitConfig()
     ADCTimerEnable(ADC_BASE);
     ADCEnable(ADC_BASE);
     ADCChannelEnable(ADC_BASE, ADC_CH_1);
+
+    // GPIO
+    GPIOPinWrite(GPIOA0_BASE, 0x10, 0x10); // Nunchuk VCC On
 }
 
 void main()
@@ -255,18 +252,7 @@ void main()
     InitConfig();
 
     NunchukData nd;
-    int failCount = 0;
-
-    int ret = NunchukHandshake();
-    if (ret == 0) {
-        Report("Successful nunchuk init\n\r");
-    } else {
-        ret = NunchukGetData((unsigned char *) &nd);
-        if (ret < 0) {
-            Report("Failed nunchuk init\n\r... Aborting...");
-            return;
-        }
-    }
+    NunchukRead(&nd);
 
     // clear and draw miku
     fillScreen(BG_COLOR);
@@ -275,28 +261,7 @@ void main()
 
     while(true)
     {
-        // read nunchuk data
-        // TODO: add this to a separate function
-        // TODO: add PMOS to circuit
-        ret = NunchukGetData((unsigned char *) &nd);
-        if (ret == 0) {
-            failCount = 0;
-        } else {
-            Report("Failed nunchuk read... \n\r");
-            failCount++;
-            if (failCount >= 100)    {
-                Report("Attempting to reconnect to nunchuk\n\r");
-                if (NunchukHandshake() == 0) {
-                    Report("Successful nunchuk init\n\r");
-                    continue;
-                } else {
-                    Report("Failed nunchuk init\n\r... Aborting...");
-                    return;
-                }
-            }
-            continue;
-        }
-
+        NunchukRead(&nd);
 //        double frequencies[] = {
 //            261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.0, 415.3, 440.0, 466.16, 493.88, // OCTAVE 4
 //            523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61, 880.0, 932.33, 987.77 // OCTAVE 5
@@ -307,7 +272,6 @@ void main()
         while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
         unsigned int volume = (ADCFIFORead(ADC_BASE, ADC_CH_1) >> 2) & 0xFFF;
 
-        Report("%x\n\r", volume);
         if (volume >= BLOW_THRESHOLD) {
             blow_age = 0;
         } else if (blow_age < BLOW_EXPIRY) {
