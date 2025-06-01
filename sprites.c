@@ -67,7 +67,7 @@ void DrawNotes()
         } else if (curr_time_ms >= note.start_ms - TRACK_DURATION) {
             // note is visible
             int new_head = (curr_time_ms - note.start_ms + TRACK_DURATION) * (110.0 / TRACK_DURATION);
-            new_head = (new_head < TRACK_HEIGHT) ? new_head : 109;
+            new_head = (new_head < TRACK_HEIGHT) ? new_head : 110;
 
             int new_tail = TRACK_HEIGHT - (note_end_ms - curr_time_ms) * (110.0 / TRACK_DURATION);
             new_tail = (new_tail >= 0) ? new_tail : 0;

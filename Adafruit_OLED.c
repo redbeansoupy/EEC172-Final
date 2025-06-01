@@ -24,25 +24,14 @@
 //*****************************************************************************
 
 void writeCommand(unsigned char c) {
-
-//TODO 1
-/* Write a function to send a command byte c to the OLED via
-*  SPI.
-*/
-
     // Command byte means that the DC bit (GPIO) is set to 0.
-    MAP_GPIOPinWrite(GPIOA0_BASE, 0x80, 0x00);
+    GPIOPinWrite(GPIOA0_BASE, 0x80, 0x00);
     writeData(c);
-    MAP_GPIOPinWrite(GPIOA0_BASE, 0x80, 0x80);
+    GPIOPinWrite(GPIOA0_BASE, 0x80, 0x80);
 }
 //*****************************************************************************
 
 void writeData(unsigned char c) {
-
-//TODO 2
-/* Write a function to send a data byte c to the OLED via
-*  SPI.
-*/
     unsigned long ulDummy;
     MAP_SPICSEnable(GSPI_BASE);
 
@@ -50,25 +39,15 @@ void writeData(unsigned char c) {
     GPIOPinWrite(GPIOA0_BASE, 0x40, 0x00);
 
     // Send the char c via SPI
-    MAP_SPIDataPut(GSPI_BASE, c);
-    MAP_SPIDataGet(GSPI_BASE, &ulDummy);
+    SPIDataPut(GSPI_BASE, c);
+    SPIDataGet(GSPI_BASE, &ulDummy);
 
     GPIOPinWrite(GPIOA0_BASE, 0x40, 0x40);
-    MAP_SPICSDisable(GSPI_BASE);
+    SPICSDisable(GSPI_BASE);
 }
 
 //*****************************************************************************
 void Adafruit_Init(void){
-
-//TODO 3
-/* NOTE: This function assumes that the RESET pin of the 
-*  OLED has been wired to GPIO28, pin 18 (P2.2). If you 
-*  use a different pin for the OLED reset, then you should
-*  update the GPIOPinWrite commands below that set RESET 
-*  high or low.
-*
-*  i did it :3
-*/
 
   volatile unsigned long delay;
 
