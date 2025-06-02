@@ -60,11 +60,8 @@ void PinMuxConfig(void)
     PinModeSet(PIN_04, PIN_MODE_0);
     PinModeSet(PIN_15, PIN_MODE_0);
     PinModeSet(PIN_18, PIN_MODE_0);
-    PinModeSet(PIN_21, PIN_MODE_0);
-    PinModeSet(PIN_45, PIN_MODE_0);
     PinModeSet(PIN_50, PIN_MODE_0);
     PinModeSet(PIN_52, PIN_MODE_0);
-    PinModeSet(PIN_53, PIN_MODE_0);
     PinModeSet(PIN_55, PIN_MODE_0);
     PinModeSet(PIN_57, PIN_MODE_0);
     PinModeSet(PIN_60, PIN_MODE_0);
@@ -75,6 +72,7 @@ void PinMuxConfig(void)
     //
     PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK);
+    PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_GSPI, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
     PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
@@ -100,4 +98,12 @@ void PinMuxConfig(void)
     PinTypeGPIO(PIN_62, PIN_MODE_0, false); // PIN_62 - GPIO OLED D/C#
     GPIODirModeSet(GPIOA0_BASE, 0x80, GPIO_DIR_MODE_OUT);
     PinTypeTimer(PIN_64, PIN_MODE_3); // PIN_64 - TIMERPWM5 GT_PWM05
+
+    PinTypeGPIO(PIN_21, PIN_MODE_0, false); // PIN_21 - RED LED
+    GPIODirModeSet(GPIOA3_BASE, 0x2, GPIO_DIR_MODE_OUT);
+    PinTypeGPIO(PIN_45, PIN_MODE_0, false); // PIN_45 - GREEN LED
+    GPIODirModeSet(GPIOA3_BASE, 0x80, GPIO_DIR_MODE_OUT);
+    PinTypeGPIO(PIN_53, PIN_MODE_0, false); // PIN_53 - BLUE LED
+    GPIODirModeSet(GPIOA3_BASE, 0x40, GPIO_DIR_MODE_OUT);
+
 }
