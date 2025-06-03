@@ -180,26 +180,28 @@ BoardInit(void)
     PRCMCC3200MCUInit();
 }
 
-void EnableBuzzer(long freq)
+void EnableBuzzer(unsigned long ulBase, unsigned long ulTimer, unsigned long ulFreq)
 {
-    long loadVal= SYS_CLOCK / freq;
-    long matchVal = loadVal / 2;
-    TimerLoadSet(TIMERA2_BASE, TIMER_B, loadVal & 0xFFFF);
-    TimerPrescaleSet(TIMERA2_BASE, TIMER_B, (loadVal >> 16) & 0xFF);
-    TimerMatchSet(TIMERA2_BASE, TIMER_B, matchVal & 0xFFFF);
-    TimerPrescaleMatchSet(TIMERA2_BASE, TIMER_B, (matchVal >> 16) & 0xFF);
-    TimerEnable(TIMERA2_BASE,TIMER_B);
+    unsigned long loadVal= SYS_CLOCK / ulFreq;
+    unsigned long matchVal = loadVal / 2;
+    TimerLoadSet(ulBase, ulTimer, loadVal & 0xFFFF);
+    TimerPrescaleSet(ulBase, ulTimer, (loadVal >> 16) & 0xFF);
+    TimerMatchSet(ulBase, ulTimer, matchVal & 0xFFFF);
+    TimerPrescaleMatchSet(ulBase, ulTimer, (matchVal >> 16) & 0xFF);
+    TimerEnable(ulBase, ulTimer);
 }
 
-void DisableBuzzer()
+void DisableBuzzer(unsigned long ulTimer, unsigned long ulFreq)
 {
-    TimerDisable(TIMERA2_BASE,TIMER_B);
+    TimerDisable(ulTimer, ulFreq);
 }
 
 int CalcBuglePosition(NunchukData nd) {
     static int prevPos = MIKU_WIDTH;
     int newPos;
 
+    uint16_t accelZ = GetAccelZ(nd) - 50;
+    accelZ = CLAMP(accelZ, 400, 700);
     newPos = (700 - accelZ) / 2; // 700 is tuned parameter for player comfort
 
     newPos = (newPos + prevPos * 3) / 4;
@@ -303,6 +305,11 @@ void InitConfig()
     PRCMPeripheralReset(PRCM_TIMERA2);
     TimerConfigure(TIMERA2_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM));
 
+    // PWM Timer (Backing)
+    PRCMPeripheralClkEnable(PRCM_TIMERA3, PRCM_RUN_MODE_CLK);
+    PRCMPeripheralReset(PRCM_TIMERA3);
+    TimerConfigure(TIMERA3_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM));
+
     // ADC
     ADCTimerConfig(ADC_BASE, 2);
     ADCTimerEnable(ADC_BASE);
@@ -313,6 +320,31 @@ void InitConfig()
     GPIOPinWrite(GPIOA3_BASE, 0x02, 0); // RED
     GPIOPinWrite(GPIOA3_BASE, 0x80, 0); // GREEN
     GPIOPinWrite(GPIOA3_BASE, 0x40, 0); // BLUE
+}
+
+void PlayBackingTrack()
+{
+    static int noteIdx;
+    long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
+    int totalNotes = sizeof(demo_song_back)/sizeof(Note);
+
+    while (noteIdx < totalNotes) {
+        Note note = demo_song_back[noteIdx];
+        int note_end_ms = note.start_ms + note.length_ms;
+        if (curr_time_ms > note_end_ms) {
+            // finished note
+            noteIdx++;
+        } else if (curr_time_ms >= note.start_ms) {
+            // play note
+            EnableBuzzer(TIMERA2_BASE, TIMER_B, note.x);
+            Report("%d\n\r", note.x);
+            return;
+        } else {
+            // no note to play
+            break;
+        }
+    }
+    DisableBuzzer(TIMERA2_BASE, TIMER_B);
 }
 
 void main()
@@ -338,7 +370,7 @@ void main()
 
         // read ADC
         static int blow_age;
-        while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
+//        while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
         unsigned int volume = (ADCFIFORead(ADC_BASE, ADC_CH_1) >> 2) & 0xFFF;
 
         if (volume >= BLOW_THRESHOLD) {
@@ -352,20 +384,21 @@ void main()
         DrawBugle(bugle_pos);
 
         // play/stop buzzer
-        long frequency = (float) bugle_pos * (750.0 / 128.0) + 250;
+        long frequency = POS_TO_FREQ(bugle_pos);
         if (!nd.button_z || blow_age < BLOW_EXPIRY) {
-            EnableBuzzer(frequency);
+            EnableBuzzer(TIMERA3_BASE,TIMER_B, frequency);
             if (!isPressed) {
                 isPressed = 1;
                 CalcScore(0, bugle_pos);
             }
         } else {
-            DisableBuzzer();
+            DisableBuzzer(TIMERA3_BASE,TIMER_B);
             if (isPressed) {
                 isPressed = 0;
                 CalcScore(1, bugle_pos);
             }
         }
+        PlayBackingTrack();
         DrawScore(g_Score);
         DrawNotes();
     }

@@ -57,7 +57,6 @@ void PinMuxConfig(void)
     //
     // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
     //
-    PinModeSet(PIN_04, PIN_MODE_0);
     PinModeSet(PIN_15, PIN_MODE_0);
     PinModeSet(PIN_18, PIN_MODE_0);
     PinModeSet(PIN_50, PIN_MODE_0);
@@ -65,7 +64,6 @@ void PinMuxConfig(void)
     PinModeSet(PIN_55, PIN_MODE_0);
     PinModeSet(PIN_57, PIN_MODE_0);
     PinModeSet(PIN_60, PIN_MODE_0);
-    PinModeSet(PIN_63, PIN_MODE_0);
     
     //
     // Enable Peripheral Clocks 
@@ -82,9 +80,10 @@ void PinMuxConfig(void)
     PinTypeUART(PIN_57, PIN_MODE_3); // PIN_57 - UART0 UART0_RX
 
     PinTypeI2C(PIN_01, PIN_MODE_1); // PIN_01 - I2C0 I2C_SCL
-    PinTypeI2C(PIN_02, PIN_MODE_1); // PIN_02 - I2C0 I2C_SDA
+    PinTypeI2C(PIN_17, PIN_MODE_9); // PIN_17 - I2C0 I2C_SDA
     PinTypeGPIO(PIN_59, PIN_MODE_0, false); // PIN_59 - GPIO NUNCHUK VCC
     GPIODirModeSet(GPIOA0_BASE, 0x10, GPIO_DIR_MODE_OUT);
+    PinConfigSet(PIN_59, PIN_STRENGTH_6MA, PIN_TYPE_STD);
 
     PinTypeGPIO(PIN_03, PIN_MODE_0, false); // PIN_03 - GPIO OLED RESET
     GPIODirModeSet(GPIOA1_BASE, 0x10, GPIO_DIR_MODE_OUT);
@@ -97,10 +96,11 @@ void PinMuxConfig(void)
     GPIODirModeSet(GPIOA0_BASE, 0x40, GPIO_DIR_MODE_OUT);
     PinTypeGPIO(PIN_62, PIN_MODE_0, false); // PIN_62 - GPIO OLED D/C#
     GPIODirModeSet(GPIOA0_BASE, 0x80, GPIO_DIR_MODE_OUT);
-    PinTypeTimer(PIN_64, PIN_MODE_3); // PIN_64 - TIMERPWM5 GT_PWM05
+    PinTypeTimer(PIN_64, PIN_MODE_3); // PIN_64 - MAIN BUZZER TIMERPWM5 GT_PWM05
+    PinTypeTimer(PIN_02, PIN_MODE_3); // PIN_02 - BACKING BUZZER TIMERPWM7 GT_PWM07
 
-    PinTypeGPIO(PIN_21, PIN_MODE_0, false); // PIN_21 - RED LED
-    GPIODirModeSet(GPIOA3_BASE, 0x2, GPIO_DIR_MODE_OUT);
+//    PinTypeGPIO(PIN_21, PIN_MODE_0, false); // PIN_21 - RED LED
+//    GPIODirModeSet(GPIOA3_BASE, 0x2, GPIO_DIR_MODE_OUT);
     PinTypeGPIO(PIN_45, PIN_MODE_0, false); // PIN_45 - GREEN LED
     GPIODirModeSet(GPIOA3_BASE, 0x80, GPIO_DIR_MODE_OUT);
     PinTypeGPIO(PIN_53, PIN_MODE_0, false); // PIN_53 - BLUE LED
