@@ -354,6 +354,25 @@ void main()
     NunchukData nd;
     NunchukHandshake();
 
+    while (true) {
+    // ============== TITLE SCREEN ===============================
+
+    DrawSprite((const Sprite*) &title, 0, 0, 0x0000);
+
+    while(true) {
+        NunchukRead(&nd);
+        if (nd.button_z == 0) {
+            break;
+        }
+    }
+
+    // ============== TODO: SONG SELECT ==========================
+
+
+
+
+    // ============== GAME !!!! ==================================
+
     // clear scren and draw miku
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
@@ -363,6 +382,10 @@ void main()
 
     // keep track of if button is pressed or not
     unsigned char isPressed = 0;
+
+    // store end time
+    Note lastNote = demo_song[sizeof(demo_song) / sizeof(Note) - 1];
+    unsigned long end = g_startTimeMS + lastNote.start_ms + lastNote.length_ms + 1000;
 
     while(true)
     {
@@ -401,7 +424,19 @@ void main()
         PlayBackingTrack();
         DrawScore(g_Score);
         DrawNotes();
+
+        // check if last note
+        unsigned long now = (PRCMSlowClkCtrGet() * 1000) / 32768;
+        if (now > end) {
+            break;
+        }
+
     }
+
+
+
+    // ============== TODO: LEADERBOARD =============================
+}
 }
 
 //*****************************************************************************
