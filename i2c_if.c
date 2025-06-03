@@ -110,11 +110,18 @@ I2CTransact(unsigned long ulCmd)
     // Wait until the current byte has been transferred.
     // Poll on the raw interrupt status.
     //
+    int startTime = (PRCMSlowClkCtrGet() * 1000) / 32768;
     while((MAP_I2CMasterIntStatusEx(I2C_BASE, false)
                 & I2C_MASTER_INT_DATA) == 0)
     {
         if ((MAP_I2CMasterIntStatusEx(I2C_BASE, false) & I2C_MASTER_INT_TIMEOUT) > 0)
         {
+            return FAILURE;
+        }
+
+        // return after 1000ms
+        int currTime = (PRCMSlowClkCtrGet() * 1000) / 32768;
+        if (currTime - startTime < 1000) {
             return FAILURE;
         }
     }

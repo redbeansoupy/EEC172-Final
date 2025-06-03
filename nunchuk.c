@@ -1,5 +1,6 @@
 #include <nunchuk.h>
 #include <stdint.h>
+#include <string.h>
 
 // Driverlib includes
 #include "hw_types.h"
@@ -39,7 +40,9 @@ int NunchukHandshake() {
     return ret;
 }
 
-int NunchukGetData(unsigned char *buf) {
+int NunchukGetData(unsigned char *nd) {
+    unsigned char buf[6];
+
     // write 0x00 to nunchuk to request data
     int ret = I2C_IF_Write(NUNCHUK_ADDR, (unsigned char[]){0x00}, 0x01, 0x01);
     if(ret < 0) return -1;
@@ -49,7 +52,16 @@ int NunchukGetData(unsigned char *buf) {
 
     // read 6 bytes of data
     ret = I2C_IF_Read(NUNCHUK_ADDR, buf, 6);
-    return ret;
+
+    // check for failed reads
+    if (ret < 0) return -1;
+    if (buf[3] == 0xFF && buf[4] == 0xFF && buf[5] == 0xFF) {
+        return -1;
+    }
+
+    // copy buf to nd
+    memcpy(nd, buf, 6);
+    return 0;
 }
 
 int NunchukRead(NunchukData *nd) {

@@ -86,9 +86,9 @@
 #include "oled_test.h"
 
 // game header files
-#include "notes.h"
 #include "nunchuk.h"
-#include "sprites.h"
+#include "notes.h"
+#include "drawing.h"
 
 //*****************************************************************************
 //                      MACRO DEFINITIONS
@@ -200,11 +200,10 @@ int CalcBuglePosition(NunchukData nd) {
     static int prevPos = MIKU_WIDTH;
     int newPos;
 
-    uint16_t accelZ = GetAccelZ(nd) - 10;
     newPos = (700 - accelZ) / 2; // 700 is tuned parameter for player comfort
 
     newPos = (newPos + prevPos * 3) / 4;
-    newPos = CLAMP(newPos, 10, OLED_WIDTH - miku.width - bugle.width);
+    newPos = CLAMP(newPos, 0, OLED_WIDTH - miku.width - bugle.width);
     prevPos = newPos;
     return newPos;
 }
@@ -231,7 +230,7 @@ void SetLED(unsigned char led) {
  * param buglePos: BUGLE!!!!! (bugle position, left side. player should align edge with note)
  *
  *
- * Note: if notes are shorter than 300ms there may be problems
+ * Note: if notes are shorter than 150ms there may be problems
  */
 void CalcScore(unsigned char dir, int buglePos) {
     static int currentNote = 0; // index for demo_song
@@ -242,14 +241,12 @@ void CalcScore(unsigned char dir, int buglePos) {
 
     int compareVal; // this is either the note start time or end time
 
-
     if (dir == 0) {                         // start note
         // get the currently applicable note
-        while (curr_time_ms > note.start_ms + note.length_ms || curr_time_ms > note.start_ms + 300) {
+        while (curr_time_ms > note.start_ms + note.length_ms || curr_time_ms > note.start_ms + 150) {
             currentNote++;
             note = demo_song[currentNote];
         }
-
         compareVal = note.start_ms;
     } else {                                // end note
 
@@ -260,11 +257,11 @@ void CalcScore(unsigned char dir, int buglePos) {
     if (currentNote > completedNote) {
         if (buglePos > note.x - 3 && buglePos < note.x + 5) {
             long diff = abs(curr_time_ms - compareVal);
-            if (diff < 80) {         // great
+            if (diff < 75) {         // great
                 g_Score += 10;
                 noteScore += 10;
                 SetLED(GREEN_LED);
-            } else if (diff < 300) { // ok
+            } else if (diff < 150) { // ok
                 g_Score += 3;
                 noteScore += 3;
                 SetLED(BLUE_LED);
@@ -272,26 +269,12 @@ void CalcScore(unsigned char dir, int buglePos) {
                 SetLED(RED_LED);
             }
         }
-
     }
 
     if (dir == 1 && noteScore > 0) {
         completedNote = currentNote;
         noteScore = 0;
     }
-}
-
-void DrawScore() {
-    char digits[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    unsigned char x = OLED_WIDTH - 19;
-    unsigned char y = OLED_HEIGHT - miku.height - 8;
-    unsigned char hundred = g_Score / 100;
-    unsigned char ten = (g_Score - (hundred * 100)) / 10;
-    unsigned char one = g_Score - (hundred * 100) - (ten * 10);
-
-    drawChar(x, y, digits[hundred], 0xFFFFF, BG_COLOR, 1);
-    drawChar(x + 6, y, digits[ten], 0xFFFFF, BG_COLOR, 1);
-    drawChar(x + 12, y, digits[one],  0xFFFFF, BG_COLOR, 1);
 }
 
 void InitConfig()
@@ -315,7 +298,7 @@ void InitConfig()
     Timer_IF_Init(PRCM_TIMERA0, TIMERA0_BASE, TIMER_CFG_ONE_SHOT, TIMER_A, 0);
     Timer_IF_IntSetup(TIMERA0_BASE, TIMER_A, ReadTimerHandler);
 
-    // PWM Timer
+    // PWM Timer (Main)
     PRCMPeripheralClkEnable(PRCM_TIMERA2, PRCM_RUN_MODE_CLK);
     PRCMPeripheralReset(PRCM_TIMERA2);
     TimerConfigure(TIMERA2_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM));
@@ -337,12 +320,14 @@ void main()
     InitConfig();
 
     NunchukData nd;
-    NunchukRead(&nd);
+    NunchukHandshake();
 
-    // clear and draw miku
+    // clear scren and draw miku
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
-    g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768;
+
+    // give 4s for song to start
+    g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 4000;
 
     // keep track of if button is pressed or not
     unsigned char isPressed = 0;
@@ -350,10 +335,6 @@ void main()
     while(true)
     {
         NunchukRead(&nd);
-//        double frequencies[] = {
-//            261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.0, 415.3, 440.0, 466.16, 493.88, // OCTAVE 4
-//            523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61, 880.0, 932.33, 987.77 // OCTAVE 5
-//        };
 
         // read ADC
         static int blow_age;
@@ -385,8 +366,7 @@ void main()
                 CalcScore(1, bugle_pos);
             }
         }
-
-        DrawScore();
+        DrawScore(g_Score);
         DrawNotes();
     }
 }
