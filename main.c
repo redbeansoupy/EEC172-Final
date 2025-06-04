@@ -182,6 +182,7 @@ int GameplayLoop(NunchukData nd)
     unsigned long now = (PRCMSlowClkCtrGet() * 1000) / 32768;
     unsigned long end = g_startTimeMS + lastNote.start_ms + lastNote.length_ms + 1000;
     if (now > end) {
+        DisableBuzzer(TIMERA3_BASE,TIMER_B);
         return 0;
     }
 
