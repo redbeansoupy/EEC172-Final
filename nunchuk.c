@@ -18,16 +18,12 @@
 #include "timer_if.h"
 
 volatile uint8_t g_NunchukReadReady = 0;
+extern int g_startTimeMS;
+
 #define DELAY_MS(MS) UtilsDelay(MS*80000.0)
 #define MAX_READ_ATTEMPTS 3
-#define MAX_INIT_ATTEMPTS 2
 
 int NunchukHandshake() {
-    // Reset Nunchuk VCC
-    GPIOPinWrite(GPIOA0_BASE, 0x10, 0x00); // VCC Low
-    DELAY_MS(50);
-    GPIOPinWrite(GPIOA0_BASE, 0x10, 0x10); // VCC High
-
     // write 0x55 to nunchuk register 0xF0
     int ret = I2C_IF_Write(NUNCHUK_ADDR, (unsigned char[]){0xF0, 0x55}, 0x02, 0x01);
     if(ret < 0) return -1;
@@ -75,18 +71,22 @@ int NunchukRead(NunchukData *nd) {
     }
 
     // Too many consecutive read fails
+    // Turn on Nunchuk ERROR LED (turn off others)
+    GPIOPinWrite(GPIOA0_BASE, 0x10, 0x10); // Nunchuk Error LED High
+    GPIOPinWrite(GPIOA3_BASE, 0x80, 0x00); // GREEN low
+    GPIOPinWrite(GPIOA3_BASE, 0x40, 0x00); // BLUE low
+
     // Reinitialize
+    unsigned long initStart = (PRCMSlowClkCtrGet() * 1000) / 32768;
     Report("Attempting to initialize nunchuk...\n\r");
-    for (failCount = 0; failCount < MAX_INIT_ATTEMPTS; failCount++) {
-        ret = NunchukHandshake();
-        if (ret == 0) {
-            Report("Successful nunchuk init\n\r");
-            break;
-        } else {
-            Report("Failed nunchuk init...\n\r");
-        }
+    while (NunchukHandshake()) {
+        Report("Failed nunchuk init...\n\r");
     }
-    if (ret < 0) return -1; // return if init failed
+    Report("Successful nunchuk init\n\r");
+    GPIOPinWrite(GPIOA0_BASE, 0x10, 0x00); // Nunchuk Error LED Low
+    unsigned long initEnd = (PRCMSlowClkCtrGet() * 1000) / 32768;
+    // pauses game
+    g_startTimeMS += initEnd - initStart;
 
     // Reattempt to read nunchuk
     for (failCount = 0; failCount < MAX_READ_ATTEMPTS; failCount++) {

@@ -23,7 +23,7 @@ typedef struct {
 void DrawSprite(const Sprite *sprite, int xPos, int yPos, unsigned char bg_color);
 void DrawSongInfo(int songIdx);
 void ClearSongInfo(int songIdx);
-void DrawBugle(int currPos, unsigned char reset));
+void DrawBugle(int currPos, unsigned char reset);
 void DrawNotes(unsigned char reset);
 void DrawScore(unsigned int uScore);
 
