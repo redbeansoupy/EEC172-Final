@@ -72,6 +72,46 @@ void PlayBackingTrack(unsigned char reset)
     DisableBuzzer(TIMERA2_BASE, TIMER_B);
 }
 
+void PlayMenuMusic(unsigned char reset)
+{
+    static int noteIdx;
+    int totalNotes = sizeof(bethoveen_virus)/sizeof(Note);
+
+    // reset static vars
+    if (reset) {
+        noteIdx = 0;
+        g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 1000;
+        return;
+    }
+
+    // loop song
+    if (noteIdx >= totalNotes) {
+        noteIdx = 0;
+        g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 1000;
+    }
+
+    long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
+
+    while (true) {
+
+        const Note note = bethoveen_virus[noteIdx];
+        int note_end_ms = note.start_ms + note.length_ms;
+        if (curr_time_ms > note_end_ms) {
+            // finished note
+            noteIdx++;
+        } else if (curr_time_ms >= note.start_ms) {
+            // play note
+            EnableBuzzer(TIMERA2_BASE, TIMER_B, note.x);
+            return;
+        } else {
+            // no note to play
+            DisableBuzzer(TIMERA2_BASE, TIMER_B);
+            return;
+        }
+    }
+
+}
+
 /**
  * Increment points if points are earned and set the LEDs
  * 10 points given if player starts or ends on time

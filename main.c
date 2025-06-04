@@ -91,8 +91,8 @@ int CalcBuglePosition(NunchukData nd) {
     static int prevPos = MIKU_WIDTH;
     int newPos;
 
-    uint16_t accelZ = GetAccelZ(nd) - 50;
-    accelZ = CLAMP(accelZ, 400, 700);
+    uint16_t accelZ = GetAccelZ(nd);
+    accelZ = CLAMP(accelZ, 380, 700);
     newPos = (700 - accelZ) / 2; // 700 is tuned parameter for player comfort
 
     newPos = (newPos + prevPos * 3) / 4;
@@ -107,6 +107,7 @@ int TitleScreenLoop(NunchukData nd)
     unsigned int prevSongIdx = g_songIdx;
 
     NunchukRead(&nd);
+    PlayMenuMusic(0);
 
     // joystick left
     if (nd.joystick_y < 40 && !wasLeft) {
@@ -189,10 +190,9 @@ int GameplayLoop(NunchukData nd)
     return 1;
 }
 
-
 void main()
 {
-    // init
+    // Init
     InitConfig();
     NunchukData nd;
     NunchukHandshake();
@@ -207,6 +207,10 @@ void main()
     DrawSprite((const Sprite*) &title, 0, 0, 0x0000);
     DrawSongInfo(g_songIdx);
 
+    // reset static variables
+    PlayMenuMusic(1);
+
+    // TITLE SCREEN LOOP
     while(TitleScreenLoop(nd));
 
     // ==================== GAME !!!! =======================
@@ -226,6 +230,7 @@ void main()
     // give 3s for song to start
     g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 3000;
 
+    // GAMEPLAY LOOP
     while(GameplayLoop(nd));
 
     // ============== TODO: LEADERBOARD =============================
