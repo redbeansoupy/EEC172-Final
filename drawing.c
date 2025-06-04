@@ -6,7 +6,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
 
-int g_startTimeMS;
+unsigned int g_startTimeMS;
 
 void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_color) {
     int w = sprite->width;

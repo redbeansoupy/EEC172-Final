@@ -152,7 +152,7 @@ static const Note demo_song[] = {
     {FS4, 40806, 368}
 };
 
-static const Note ditto_back[] = {
+static const Note demo_song_back[] = {
     {110, 315, 200},
     {139, 527, 200},
     {165, 740, 199},
@@ -447,7 +447,7 @@ static const Note world_mine_back[] = {
     {698, 29054, 592},
 };
 
-static const Note demo_song_back[] = {
+static const Note bvirus[] = {
     {330, 5848, 139},
     {440, 6045, 139},
     {494, 6241, 139},

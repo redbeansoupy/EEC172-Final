@@ -1,6 +1,6 @@
 
 // Standard includes
-#include <pinmux.h>
+#include <config.h>
 #include <string.h>
 
 // Driverlib includes

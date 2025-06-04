@@ -1951,4 +1951,4 @@ static const Sprite leaderboard = {
 };
 
 
-#endif // __SPRITES_H__
+#endif // __DRAWING_H__
