@@ -883,6 +883,11 @@ static const char* song_names[] = {
     "World is Mine"
 };
 
+static const char* artist_names[] = {
+    "NewJeans",
+    "Hatsune Miku"
+};
+
 static const Note* songs_main[] = {
     ditto_main,
     world_mine_main

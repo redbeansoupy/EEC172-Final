@@ -21,6 +21,8 @@ typedef struct {
 } Sprite;
 
 void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_color);
+void DrawSongInfo(int songIdx);
+void ClearSongInfo(int songIdx);
 void DrawBugle(int currPos);
 void DrawNotes();
 void DrawScore(unsigned int uScore);

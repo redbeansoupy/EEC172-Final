@@ -104,6 +104,8 @@ int CalcBuglePosition(NunchukData nd) {
 int TitleScreenLoop(NunchukData nd)
 {
     static unsigned char wasLeft, wasRight;
+    unsigned int prevSongIdx = g_songIdx;
+
     NunchukRead(&nd);
 
     // joystick left
@@ -122,7 +124,11 @@ int TitleScreenLoop(NunchukData nd)
         wasRight = 0;
     }
 
-    drawChar(50, 110, '0' + g_songIdx, 0xFFFFF, BG_COLOR, 1);
+    // display song name
+    if (prevSongIdx != g_songIdx) {
+        ClearSongInfo(prevSongIdx);
+        DrawSongInfo(g_songIdx);
+    }
 
     // z pressed to start
     if (nd.button_z == 0) {
@@ -198,6 +204,7 @@ void main()
 
     // draw title screen
     DrawSprite((const Sprite*) &title, 0, 0, 0x0000);
+    DrawSongInfo(g_songIdx);
 
     while(TitleScreenLoop(nd));
 

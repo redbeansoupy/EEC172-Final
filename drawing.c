@@ -27,6 +27,42 @@ void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_colo
     }
 }
 
+void DrawSongInfo(int songIdx)
+{
+    unsigned char c, x = 0;
+
+    // song name
+    const char* song_name = song_names[songIdx];
+    while ((c = song_name[x++]) != '\0') {
+        drawChar(22+6*x, 110, c, 0xFFFFF, BG_COLOR, 1);
+    }
+
+    // artist name
+    const char* artist_name = artist_names[songIdx];
+    x = 0;
+    while ((c = artist_name[x++]) != '\0') {
+        drawChar(22+6*x, 120, c, 0xFFFFF, BG_COLOR, 1);
+    }
+}
+
+void ClearSongInfo(int songIdx)
+{
+    unsigned char x = 0;
+
+    // song name
+    const char* song_name = song_names[songIdx];
+    while (song_name[x++] != '\0') {
+        drawChar(22+6*x, 110, 0, 0xFFFFF, BG_COLOR, 1);
+    }
+
+    // artist name
+    const char* artist_name = artist_names[songIdx];
+    x = 0;
+    while (artist_name[x++] != '\0') {
+        drawChar(22+6*x, 120, 0, 0xFFFFF, BG_COLOR, 1);
+    }
+}
+
 void DrawBugle(int currPos)
 {
     static int prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH - BUGLE_WIDTH;
