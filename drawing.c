@@ -81,13 +81,21 @@ void DrawBugle(int currPos)
     prevPos = currPos;
 }
 
-void DrawNotes()
+void DrawNotes(unsigned char reset)
 {
     static int noteIdx;
     int numFinishedNotes = 0;
     int totalNotes = songs_main_sizes[g_songIdx];
     static int prevTails[1024];
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
+    if (reset) {
+        noteIdx = 0;
+        int i;
+        for (i=0; i>1024; i++) {
+            prevTails[i] = 0;
+        }
+        return;
+    }
 
     int i;
     for (i = 0; i < MAX_NOTES; i++) {

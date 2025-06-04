@@ -43,11 +43,16 @@ void PlayBugle(int buglePos, unsigned char isPressed)
     }
 }
 
-void PlayBackingTrack()
+void PlayBackingTrack(unsigned char reset)
 {
     static int noteIdx;
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
     int totalNotes = songs_back_sizes[g_songIdx];
+
+    if (reset) {
+        noteIdx = 0;
+        return;
+    }
 
     while (noteIdx < totalNotes) {
         const Note note = songs_back[g_songIdx][noteIdx];
@@ -77,21 +82,27 @@ void PlayBackingTrack()
  *
  * Note: if notes are shorter than 150ms there may be problems
  */
-void CalcScore(unsigned char dir, int buglePos) {
+void CalcScore(unsigned char dir, int buglePos, unsigned char reset) {
     static int currentNote = 0; // index for demo_song
     static int completedNote = -1;
     static uint8_t noteScore = 0; // reset for every note
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
     Note note = songs_main[g_songIdx][currentNote];
-
     int compareVal; // this is either the note start time or end time
+
+    if (reset) {
+        currentNote = 0;
+        completedNote = -1;
+        noteScore = 0;
+        return;
+    }
 
     if (dir == 0) {
         // start note
         // get the currently applicable note
         while (curr_time_ms > note.start_ms + note.length_ms || curr_time_ms > note.start_ms + 150) {
             currentNote++;
-            note = songs_back[g_songIdx][currentNote];
+            note = songs_main[g_songIdx][currentNote];
         }
         compareVal = note.start_ms;
     } else {
@@ -105,7 +116,7 @@ void CalcScore(unsigned char dir, int buglePos) {
             long diff = abs(curr_time_ms - compareVal);
 
             // turn all LEDs off
-            GPIOPinWrite(GPIOA3_BASE, 0x2, 0); // RED
+            GPIOPinWrite(GPIOA3_BASE, 0x02, 0); // RED
             GPIOPinWrite(GPIOA3_BASE, 0x80, 0); // GREEN
             GPIOPinWrite(GPIOA3_BASE, 0x40, 0); // BLUE
             if (diff < 75) {         // great

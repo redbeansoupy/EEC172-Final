@@ -24,7 +24,7 @@ void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_colo
 void DrawSongInfo(int songIdx);
 void ClearSongInfo(int songIdx);
 void DrawBugle(int currPos);
-void DrawNotes();
+void DrawNotes(unsigned char reset);
 void DrawScore(unsigned int uScore);
 
 /* GIMP RGB C-Source image dump (miku.c) */

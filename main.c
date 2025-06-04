@@ -161,19 +161,19 @@ int GameplayLoop(NunchukData nd)
 
     // calculate score
     if (isPressed && !wasPressed) {
-        CalcScore(0, buglePos); // posedge
+        CalcScore(0, buglePos, 0); // posedge
     } else if (!isPressed && wasPressed) {
-        CalcScore(1, buglePos); // negedge
+        CalcScore(1, buglePos, 0); // negedge
     }
     wasPressed = isPressed;
 
     // play/stop buzzers
     PlayBugle(buglePos, isPressed);
-    PlayBackingTrack();
+    PlayBackingTrack(0);
 
     // update screen
     DrawScore(g_Score);
-    DrawNotes();
+    DrawNotes(0);
 
     // end 1 second after last note
     const Note* currSongBack = songs_back[g_songIdx];
@@ -210,9 +210,16 @@ void main()
 
     // ==================== GAME !!!! =======================
 
+    // reset static variables
+    DrawNotes(1);
+    PlayBackingTrack(1);
+    CalcScore(0, 0, 1);
+    g_Score = 0;
+
     // clear screen and draw miku
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
+    DrawScore(g_Score);
 
     // give 3s for song to start
     g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 3000;
