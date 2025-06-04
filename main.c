@@ -337,7 +337,6 @@ void PlayBackingTrack()
         } else if (curr_time_ms >= note.start_ms) {
             // play note
             EnableBuzzer(TIMERA2_BASE, TIMER_B, note.x);
-            Report("%d\n\r", note.x);
             return;
         } else {
             // no note to play
@@ -373,7 +372,7 @@ void main()
 
     // ============== GAME !!!! ==================================
 
-    // clear scren and draw miku
+    // clear screen and draw miku
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
 
@@ -384,7 +383,7 @@ void main()
     unsigned char isPressed = 0;
 
     // store end time
-    Note lastNote = demo_song[sizeof(demo_song) / sizeof(Note) - 1];
+    Note lastNote = demo_song_back[sizeof(demo_song_back) / sizeof(Note) - 1];
     unsigned long end = g_startTimeMS + lastNote.start_ms + lastNote.length_ms + 1000;
 
     while(true)
