@@ -74,38 +74,60 @@ void PlayBackingTrack(unsigned char reset)
 
 void PlayMenuMusic(unsigned char reset)
 {
-    static int noteIdx;
-    int totalNotes = sizeof(bethoveen_virus)/sizeof(Note);
+    static int noteIdxA;
+    static int noteIdxB;
+    int totalNotesA = sizeof(miracle_paint_A)/sizeof(Note);
+    int totalNotesB = sizeof(miracle_paint_B)/sizeof(Note);
 
     // reset static vars
     if (reset) {
-        noteIdx = 0;
+        noteIdxA = 0;
+        noteIdxB = 0;
         g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 1000;
         return;
     }
 
     // loop song
-    if (noteIdx >= totalNotes) {
-        noteIdx = 0;
+    if (noteIdxA >= totalNotesA && noteIdxB >= totalNotesB) {
+        noteIdxA = 0;
+        noteIdxB = 0;
         g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 1000;
     }
 
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
 
+    // track A
     while (true) {
-
-        const Note note = bethoveen_virus[noteIdx];
+        const Note note = miracle_paint_A[noteIdxA];
         int note_end_ms = note.start_ms + note.length_ms;
         if (curr_time_ms > note_end_ms) {
             // finished note
-            noteIdx++;
+            noteIdxA++;
         } else if (curr_time_ms >= note.start_ms) {
             // play note
             EnableBuzzer(TIMERA2_BASE, TIMER_B, note.x);
-            return;
+            break;
         } else {
             // no note to play
             DisableBuzzer(TIMERA2_BASE, TIMER_B);
+            break;
+        }
+    }
+
+    // track B
+    while (true) {
+        const Note note = miracle_paint_B[noteIdxB];
+        int note_end_ms = note.start_ms + note.length_ms;
+        if (curr_time_ms > note_end_ms) {
+            // finished note
+            noteIdxB++;
+        } else if (curr_time_ms >= note.start_ms) {
+            // play note
+            EnableBuzzer(TIMERA3_BASE, TIMER_B, note.x);
+            return;
+        } else {
+            // no note to play
+            DisableBuzzer(TIMERA3_BASE, TIMER_B);
             return;
         }
     }
