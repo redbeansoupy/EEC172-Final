@@ -14,6 +14,7 @@
 #define BLUE_LED                 0x40
 
 extern int g_startTimeMS;
+extern int g_songIdx;
 unsigned int g_Score = 0;
 
 void EnableBuzzer(unsigned long ulBase, unsigned long ulTimer, unsigned long ulFreq)
@@ -46,10 +47,10 @@ void PlayBackingTrack()
 {
     static int noteIdx;
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
-    int totalNotes = sizeof(demo_song_back)/sizeof(Note);
+    int totalNotes = songs_back_sizes[g_songIdx];
 
     while (noteIdx < totalNotes) {
-        Note note = demo_song_back[noteIdx];
+        const Note note = songs_back[g_songIdx][noteIdx];
         int note_end_ms = note.start_ms + note.length_ms;
         if (curr_time_ms > note_end_ms) {
             // finished note
@@ -81,7 +82,7 @@ void CalcScore(unsigned char dir, int buglePos) {
     static int completedNote = -1;
     static uint8_t noteScore = 0; // reset for every note
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
-    Note note = demo_song[currentNote];
+    Note note = songs_main[g_songIdx][currentNote];
 
     int compareVal; // this is either the note start time or end time
 
@@ -90,7 +91,7 @@ void CalcScore(unsigned char dir, int buglePos) {
         // get the currently applicable note
         while (curr_time_ms > note.start_ms + note.length_ms || curr_time_ms > note.start_ms + 150) {
             currentNote++;
-            note = demo_song[currentNote];
+            note = songs_back[g_songIdx][currentNote];
         }
         compareVal = note.start_ms;
     } else {

@@ -7,6 +7,7 @@
 #include "Adafruit_SSD1351.h"
 
 unsigned int g_startTimeMS;
+unsigned int g_songIdx;
 
 void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_color) {
     int w = sprite->width;
@@ -48,16 +49,14 @@ void DrawNotes()
 {
     static int noteIdx;
     int numFinishedNotes = 0;
-    int totalNotes = sizeof(demo_song)/sizeof(Note);
-    // TODO: prevTails SIZE IS HARD CODED RN CUZ IM LAZY BUT
-    // WE GONNA NEED TO MALLOC THIS SHIT!!!!! AND MAKE IT GLOBAL FOR THIS FILE!!!!!!
+    int totalNotes = songs_main_sizes[g_songIdx];
     static int prevTails[1024];
     long curr_time_ms = (PRCMSlowClkCtrGet() * 1000) / 32768 - g_startTimeMS;
 
     int i;
     for (i = 0; i < MAX_NOTES; i++) {
         if (noteIdx + i >= totalNotes) break;
-        Note note = demo_song[noteIdx + i];
+        Note note = songs_main[g_songIdx][noteIdx + i];
         int prev_tail = prevTails[noteIdx + i];
         int note_end_ms = note.start_ms + note.length_ms;
         if (curr_time_ms > note_end_ms) {

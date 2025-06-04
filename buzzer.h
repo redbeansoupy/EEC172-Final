@@ -3,7 +3,7 @@
 
 #include "nunchuk.h"
 
-#define SYS_CLOCK                80000000
+#define SYS_CLOCK 80000000
 
 void EnableBuzzer(unsigned long ulBase, unsigned long ulTimer, unsigned long ulFreq);
 void DisableBuzzer(unsigned long ulTimer, unsigned long ulFreq);

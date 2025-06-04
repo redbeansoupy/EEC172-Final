@@ -84,6 +84,7 @@
 #define CLAMP(val, min, max) (val < min) ? (min) : (val > max) ? (max) : (val)
 
 extern unsigned int g_startTimeMS;
+extern unsigned int g_songIdx;
 extern unsigned int g_Score;
 
 int CalcBuglePosition(NunchukData nd) {
@@ -100,6 +101,88 @@ int CalcBuglePosition(NunchukData nd) {
     return newPos;
 }
 
+int TitleScreenLoop(NunchukData nd)
+{
+    static unsigned char wasLeft, wasRight;
+    NunchukRead(&nd);
+
+    // joystick left
+    if (nd.joystick_y < 40 && !wasLeft) {
+        wasLeft = 1;
+        if (g_songIdx-- == 0) g_songIdx = songCount - 1;
+    } else if (nd.joystick_y >= 40 && wasLeft) {
+        wasLeft = 0;
+    }
+
+    // joystick right
+    if (nd.joystick_y > 207 && !wasRight) {
+        wasRight = 1;
+        if (++g_songIdx == songCount) g_songIdx = 0;
+    } else if (nd.joystick_y <= 207 && wasRight) {
+        wasRight = 0;
+    }
+
+    drawChar(50, 110, '0' + g_songIdx, 0xFFFFF, BG_COLOR, 1);
+
+    // z pressed to start
+    if (nd.button_z == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+int GameplayLoop(NunchukData nd)
+{
+    NunchukRead(&nd);
+
+    // read ADC
+    static int blow_age;
+//    while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
+    unsigned int volume = (ADCFIFORead(ADC_BASE, ADC_CH_1) >> 2) & 0xFFF;
+    if (volume >= BLOW_THRESHOLD) {
+        blow_age = 0;
+    } else if (blow_age < BLOW_EXPIRY) {
+        blow_age++;
+    }
+
+    // draw bugle
+    int buglePos = CalcBuglePosition(nd);
+    DrawBugle(buglePos);
+
+    // static keep track of if button is pressed or not
+    static unsigned char wasPressed = 0;
+    unsigned char isPressed = !nd.button_z || blow_age < BLOW_EXPIRY;
+
+    // calculate score
+    if (isPressed && !wasPressed) {
+        CalcScore(0, buglePos); // posedge
+    } else if (!isPressed && wasPressed) {
+        CalcScore(1, buglePos); // negedge
+    }
+    wasPressed = isPressed;
+
+    // play/stop buzzers
+    PlayBugle(buglePos, isPressed);
+    PlayBackingTrack();
+
+    // update screen
+    DrawScore(g_Score);
+    DrawNotes();
+
+    // end 1 second after last note
+    const Note* currSongBack = songs_back[g_songIdx];
+    int songBackSize = songs_back_sizes[g_songIdx];
+    Note lastNote = currSongBack[songBackSize - 1];
+    unsigned long now = (PRCMSlowClkCtrGet() * 1000) / 32768;
+    unsigned long end = g_startTimeMS + lastNote.start_ms + lastNote.length_ms + 1000;
+    if (now > end) {
+        return 0;
+    }
+
+    return 1;
+}
+
+
 void main()
 {
     // init
@@ -107,84 +190,27 @@ void main()
     NunchukData nd;
     NunchukHandshake();
 
-    // ************************************ //
-    //  GAME LOOP (title -> game -> score)  //
-    // ************************************ //
+    // ****************************************** //
+    //  GAME LOOP (Title -> Game -> Leaderboard)  //
+    // ****************************************** //
     while (true) {
-    // ============== TITLE SCREEN ===============================
+    // ==================== TITLE SCREEN ====================
 
+    // draw title screen
     DrawSprite((const Sprite*) &title, 0, 0, 0x0000);
 
-    while(true) {
-        NunchukRead(&nd);
-        if (nd.button_z == 0) {
-            break;
-        }
-    }
+    while(TitleScreenLoop(nd));
 
-    // ============== TODO: SONG SELECT ==========================
-
-
-
-
-    // ============== GAME !!!! ==================================
+    // ==================== GAME !!!! =======================
 
     // clear screen and draw miku
     fillScreen(BG_COLOR);
     DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
 
-    // give 4s for song to start
-    g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 4000;
+    // give 3s for song to start
+    g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 3000;
 
-    // store end time
-    Note lastNote = demo_song_back[sizeof(demo_song_back) / sizeof(Note) - 1];
-    unsigned long end = g_startTimeMS + lastNote.start_ms + lastNote.length_ms + 1000;
-
-    while(true)
-    {
-        NunchukRead(&nd);
-
-        // read ADC
-        static int blow_age;
-//        while(!MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CH_1));
-        unsigned int volume = (ADCFIFORead(ADC_BASE, ADC_CH_1) >> 2) & 0xFFF;
-        if (volume >= BLOW_THRESHOLD) {
-            blow_age = 0;
-        } else if (blow_age < BLOW_EXPIRY) {
-            blow_age++;
-        }
-
-        // draw bugle
-        int buglePos = CalcBuglePosition(nd);
-        DrawBugle(buglePos);
-
-        // static keep track of if button is pressed or not
-        static unsigned char wasPressed = 0;
-        unsigned char isPressed = !nd.button_z || blow_age < BLOW_EXPIRY;
-
-        // calculate score
-        if (isPressed && !wasPressed) {
-            CalcScore(0, buglePos); // posedge
-        } else if (!isPressed && wasPressed) {
-            CalcScore(1, buglePos); // negedge
-        }
-        wasPressed = isPressed;
-
-        // play/stop buzzers
-        PlayBugle(buglePos, isPressed);
-        PlayBackingTrack();
-
-        // update screen
-        DrawScore(g_Score);
-        DrawNotes();
-
-        // end 1 second after last note
-        unsigned long now = (PRCMSlowClkCtrGet() * 1000) / 32768;
-        if (now > end) {
-            break;
-        }
-
-    }
+    while(GameplayLoop(nd));
 
     // ============== TODO: LEADERBOARD =============================
 }

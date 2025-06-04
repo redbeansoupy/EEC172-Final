@@ -42,7 +42,7 @@ typedef struct {
 #define  C6   FREQ_TO_POS(1047)
 #define  CS6   FREQ_TO_POS(1109)
 
-static const Note demo_song[] = {
+static const Note ditto_main[] = {
     {FS5, 104, 169},
     {FS5, 315, 372},
     {GS5, 740, 371},
@@ -152,7 +152,7 @@ static const Note demo_song[] = {
     {FS4, 40806, 368}
 };
 
-static const Note demo_song_back[] = {
+static const Note ditto_back[] = {
     {110, 315, 200},
     {139, 527, 200},
     {165, 740, 199},
@@ -877,5 +877,32 @@ static const Note bvirus[] = {
     {466, 102169, 45},
     {523, 102317, 245},
 };
+
+static const char* song_names[] = {
+    "Ditto",
+    "World is Mine"
+};
+
+static const Note* songs_main[] = {
+    ditto_main,
+    world_mine_main
+};
+
+static const Note* songs_back[] = {
+    ditto_back,
+    world_mine_back
+};
+
+static const int songs_main_sizes[] = {
+    sizeof(ditto_main) / sizeof(Note),
+    sizeof(world_mine_main) / sizeof(Note)
+};
+
+static const int songs_back_sizes[] = {
+    sizeof(ditto_back) / sizeof(Note),
+    sizeof(world_mine_back) / sizeof(Note)
+};
+
+static const int songCount = sizeof(songs_main) / sizeof(Note*);
 
 #endif // __NOTES_H__
