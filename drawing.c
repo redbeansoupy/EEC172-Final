@@ -9,7 +9,7 @@
 unsigned int g_startTimeMS;
 unsigned int g_songIdx;
 
-void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_color) {
+void DrawSprite(const Sprite *sprite, int xPos, int yPos, unsigned char bg_color) {
     int w = sprite->width;
     int h = sprite->height;
     const unsigned char *data = sprite->pixel_data;
@@ -63,9 +63,13 @@ void ClearSongInfo(int songIdx)
     }
 }
 
-void DrawBugle(int currPos)
+void DrawBugle(int currPos, unsigned char reset)
 {
     static int prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH - BUGLE_WIDTH;
+    if (reset) {
+        prevPos = OLED_WIDTH - MIKU_WIDTH - BUGLE_WIDTH - BUGLE_WIDTH;
+        return;
+    }
     if (currPos != prevPos) {
         DrawSprite((const Sprite*)&bugle, currPos, OLED_HEIGHT - miku.height + 2, 0x0000);
 

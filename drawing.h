@@ -20,10 +20,10 @@ typedef struct {
     const unsigned char *pixel_data;
 } Sprite;
 
-void DrawSprite (const Sprite *sprite, int xPos, int yPos, unsigned char bg_color);
+void DrawSprite(const Sprite *sprite, int xPos, int yPos, unsigned char bg_color);
 void DrawSongInfo(int songIdx);
 void ClearSongInfo(int songIdx);
-void DrawBugle(int currPos);
+void DrawBugle(int currPos, unsigned char reset));
 void DrawNotes(unsigned char reset);
 void DrawScore(unsigned int uScore);
 

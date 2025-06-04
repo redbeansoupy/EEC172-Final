@@ -153,7 +153,7 @@ int GameplayLoop(NunchukData nd)
 
     // draw bugle
     int buglePos = CalcBuglePosition(nd);
-    DrawBugle(buglePos);
+    DrawBugle(buglePos, 0);
 
     // static keep track of if button is pressed or not
     static unsigned char wasPressed = 0;
@@ -215,6 +215,7 @@ void main()
     DrawNotes(1);
     PlayBackingTrack(1);
     CalcScore(0, 0, 1);
+    DrawBugle(0, 1);
     g_Score = 0;
 
     // clear screen and draw miku
