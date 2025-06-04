@@ -33,23 +33,6 @@
 //
 //*****************************************************************************
 
-//*****************************************************************************
-//
-// Application Name     - I2C
-// Application Overview - The objective of this application is act as an I2C
-//                        diagnostic tool. The demo application is a generic
-//                        implementation that allows the user to communicate
-//                        with any I2C device over the lines.
-//
-//*****************************************************************************
-
-//*****************************************************************************
-//
-//! \addtogroup i2c_demo
-//! @{
-//
-//*****************************************************************************
-
 // Standard includes
 #include <config.h>
 #include <stdio.h>
@@ -100,7 +83,6 @@
 #define BLOW_THRESHOLD           0xB00
 #define CLAMP(val, min, max) (val < min) ? (min) : (val > max) ? (max) : (val)
 
-
 extern unsigned int g_startTimeMS;
 extern unsigned int g_Score;
 
@@ -120,12 +102,14 @@ int CalcBuglePosition(NunchukData nd) {
 
 void main()
 {
+    // init
     InitConfig();
-
     NunchukData nd;
     NunchukHandshake();
 
-    // game loop (title -> game -> score)
+    // ************************************ //
+    //  GAME LOOP (title -> game -> score)  //
+    // ************************************ //
     while (true) {
     // ============== TITLE SCREEN ===============================
 
@@ -174,33 +158,33 @@ void main()
         int buglePos = CalcBuglePosition(nd);
         DrawBugle(buglePos);
 
-        //
         // static keep track of if button is pressed or not
         static unsigned char wasPressed = 0;
         unsigned char isPressed = !nd.button_z || blow_age < BLOW_EXPIRY;
+
+        // calculate score
         if (isPressed && !wasPressed) {
-            wasPressed  = 1;
             CalcScore(0, buglePos); // posedge
         } else if (!isPressed && wasPressed) {
-            wasPressed = 0;
             CalcScore(1, buglePos); // negedge
         }
+        wasPressed = isPressed;
 
-        // play/stop buzzer
+        // play/stop buzzers
         PlayBugle(buglePos, isPressed);
         PlayBackingTrack();
+
+        // update screen
         DrawScore(g_Score);
         DrawNotes();
 
-        // check if last note
+        // end 1 second after last note
         unsigned long now = (PRCMSlowClkCtrGet() * 1000) / 32768;
         if (now > end) {
             break;
         }
 
     }
-
-
 
     // ============== TODO: LEADERBOARD =============================
 }
