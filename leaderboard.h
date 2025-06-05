@@ -40,11 +40,11 @@
 
 
 //NEED TO UPDATE THIS FOR IT TO WORK!
-#define DATE                4    /* Current Date */
+#define DATE                5    /* Current Date */
 #define MONTH               6     /* Month 1-12 */
 #define YEAR                2025  /* Current year */
-#define HOUR                12    /* Time - hours */
-#define MINUTE              40    /* Time - minutes */
+#define HOUR                3    /* Time - hours */
+#define MINUTE              9    /* Time - minutes */
 #define SECOND              0     /* Time - seconds */
 
 
@@ -65,8 +65,8 @@
 // DATA1 is the first part of the JSON to post, before the desired message
 #define DATA1 "{" \
             "\"state\": {\r\n"                                              \
-                "\"desired\" : {\r\n"                                       \
-                    "\"leaderboard\" : \""
+                "\"desired\" : {\r\n"                                       
+                    
 
 // DATA2 is the second part of the JSON to post, after the desired message
 #define DATA2 "\r\n"                                            \
@@ -79,10 +79,11 @@
 #define BSSID_LEN_MAX 6
 #define RECV_BUF_SIZE 1460
 
+
 int set_time();
 void GetPlayerName(char* playerName);
 int Connect();
-void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboardStr);
-int GetLeaderboard(int iTLSSockID, char *acRecvbuff);
-int http_post(int iTLSSockID, char* msg);
+void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_songIdx, char* newLeaderboardStr);
+int GetLeaderboard(int iTLSSockID, char *acRecvbuff, unsigned int g_songIdx);
+int http_post(int iTLSSockID, char* msg, unsigned int g_songIdx);
 int http_get(int iTLSSockID, char* buf);

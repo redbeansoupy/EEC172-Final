@@ -5,6 +5,12 @@
 #include "Adafruit_SSD1351.h"
 #include "glcdfont.h"
 
+const char leaderboardStrings[3][19] = {"\"leaderboard0\" : \"",
+        "\"leaderboard1\" : \"",
+        "\"leaderboard2\" : \""
+};
+
+
 int set_time() {
     long retVal;
 
@@ -45,15 +51,33 @@ int Connect() {
     return lRetVal;
 }
 
-int GetLeaderboard(int iTLSSockID, char *acRecvbuff) {
-    acRecvbuff = http_get(iTLSSockID, acRecvbuff);
+int GetLeaderboard(int iTLSSockID, char *acRecvbuff, unsigned int g_songIdx) {
+    int ret = 1;
+    while (ret != 0) {
+        ret = http_get(iTLSSockID, acRecvbuff);
+    }
     
     // find the desired leaderboard
     const char matchDesired[7] = "desired";
-    const char matchLeaderboard[11] = "leaderboard";
+    char matchLeaderboard[12] = "leaderboard0";
     uint8_t desired = 0;
     uint8_t leaderboard = 0;
     int idx = 0;
+
+    // change name of leaderboard based on song idx
+    switch (g_songIdx) {
+        case 1:
+            matchLeaderboard[11] = '1';
+            break;
+        case 2:
+            matchLeaderboard[11] = '2';
+            break;
+        default:
+            break;
+    }
+    Report("matchLeaderboard: %s\n\r", matchLeaderboard);
+    Report("matchDesired: %s\n\r", matchDesired);
+
 
     while (desired < 7) {
         if (acRecvbuff[idx] == matchDesired[desired]) {
@@ -66,7 +90,7 @@ int GetLeaderboard(int iTLSSockID, char *acRecvbuff) {
         idx++;
     }
     
-    while (leaderboard < 11) {
+    while (leaderboard < 12) {
         if (acRecvbuff[idx] == matchLeaderboard[leaderboard]) {
             leaderboard++;
         } else if (acRecvbuff[idx] == '\0') {
@@ -132,12 +156,12 @@ void GetPlayerName(char* playerName) {
 
 }
 
-void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboardStr) {
+void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_songIdx, char* newLeaderboardStr) {
     char leaderboardStr[RECV_BUF_SIZE];
     Report("Using score %d\n\r", g_Score);
     
     // get leaderboard
-    int idx = GetLeaderboard(iTLSSockID, leaderboardStr);
+    int idx = GetLeaderboard(iTLSSockID, leaderboardStr, g_songIdx);
     Report("index of leaderboard: %d\n\r", idx);
     if (idx < 0) {
         return;
@@ -192,11 +216,12 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboar
         // parse score into int
         scores[i] = 0;
         for (j = 0; j < 4; j++) {
+            if (scores_char[i][j] == '\0') break;
             scores[i] *= 10;
             scores[i] += scores_char[i][j] - '0';
         }
-
-        if (g_Score > scores[i]) {
+        Report("scores[%d]: %u\n\r", i, scores[i]);
+        if (g_Score > scores[i] && playerPlace < 0) {
             playerPlace = i;
             Report("Player placed at %d\n\r", i);
         }
@@ -260,11 +285,13 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboar
     newLeaderboardStr[idx] = '"'; // for how the draw function parses the string
     newLeaderboardStr[idx + 1] = '\0';
 
-    http_post(iTLSSockID, newLeaderboardStr);
-                
+    int ret = 1;
+    while (ret != 0) {
+        ret = http_post(iTLSSockID, newLeaderboardStr, g_songIdx);
+    }        
 }
 
-int http_post(int iTLSSockID, char* msg){
+int http_post(int iTLSSockID, char* msg, unsigned int g_songIdx){
     char acSendBuff[512];
     char acRecvbuff[1460];
     char cCLLength[200];
@@ -281,8 +308,8 @@ int http_post(int iTLSSockID, char* msg){
     strcpy(pcBufHeaders, "\r\n\r\n");
 
     char awsMsgCpy[1024];
-    memcpy(awsMsgCpy, msg, 1024);
-    int dataLength = strlen(DATA1) + strlen(awsMsgCpy) + strlen(DATA2);
+    strcpy(awsMsgCpy, msg);
+    int dataLength = strlen(DATA1) + strlen(leaderboardStrings[g_songIdx]) + strlen(awsMsgCpy) + strlen(DATA2);
 
     strcpy(pcBufHeaders, CTHEADER);
     pcBufHeaders += strlen(CTHEADER);
@@ -299,8 +326,10 @@ int http_post(int iTLSSockID, char* msg){
     // json start
     strcpy(pcBufHeaders, DATA1);
     pcBufHeaders += strlen(DATA1);
+    strcpy(pcBufHeaders, leaderboardStrings[g_songIdx]);
+    pcBufHeaders += strlen(leaderboardStrings[g_songIdx]);
 
-    // message from IR remote
+    // leaderboard contents
     strcpy(pcBufHeaders, awsMsgCpy);
     pcBufHeaders += strlen(awsMsgCpy);
 
@@ -379,14 +408,10 @@ int http_get(int iTLSSockID, char* acRecvbuff){
     else {
         acRecvbuff[lRetVal+1] = '\0';
         UART_PRINT("\n\r\n\r\n\r RECEIVED FROM GET: \n\r");
-        // int i = 0;
-        // for (i = 0; i < lRetVal; i++) {
-        //     UART_PRINT("%c", acRecvbuff[i]);
-        // }
         UART_PRINT(acRecvbuff);
         UART_PRINT("\n\r\n\r");
 
-        return acRecvbuff;
+        return 0;
     }
 }
 

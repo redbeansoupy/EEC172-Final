@@ -245,7 +245,7 @@ void main()
     // ============== LEADERBOARD =============================
 
     char leaderboardStr[1460];
-    UpdateLeaderboard(iTLSSockID, g_Score, leaderboardStr);
+    UpdateLeaderboard(iTLSSockID, g_Score, g_songIdx, leaderboardStr);
     DrawLeaderboard(leaderboardStr);
     
     uint8_t z = 1;
