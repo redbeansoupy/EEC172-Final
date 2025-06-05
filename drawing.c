@@ -142,3 +142,38 @@ void DrawScore(unsigned int uScore) {
     drawChar(x + 6, y, digits[ten], 0xFFFFF, BG_COLOR, 1);
     drawChar(x + 12, y, digits[one],  0xFFFFF, BG_COLOR, 1);
 }
+
+void DrawMsg(int x, int y, char* msg) {
+    while (*msg != '\0') {
+        drawChar(x, y, *msg, 0xFFFFF, BG_COLOR, 1);
+        x += 6;
+        msg++;
+    }
+}
+
+void DrawLeaderboard(char* leaderboardStr) {
+    DrawSprite((const Sprite*) &leaderboard, 0, 0, 0x0000);
+
+    // 5 players, leaderboard[i][0] = name, leaderboard[i][1] = score
+    uint8_t i;
+    uint8_t j;
+    uint8_t k;
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 2; j++) {
+            for (k = 0; k < 5; k++) {
+                if (*leaderboardStr == ' ') {
+                    leaderboardStr++;
+                    break;
+                } else if (*leaderboardStr == '"') {
+                    return;
+                }
+                // print word on oled
+
+                drawChar((j * 30) + (k * 6) + 45, i * 14 + 50, *leaderboardStr, 0xFFFFF, BG_COLOR, 1);
+                leaderboardStr++;
+                
+            }
+
+        }
+    }
+}

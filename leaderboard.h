@@ -34,6 +34,10 @@
 #include "network_utils.h"
 #include "wifi.h"
 #include "drawing.h"
+#include "nunchuk.h"
+#include "Adafruit_GFX.h"
+#include "Adafruit_SSD1351.h"
+
 
 //NEED TO UPDATE THIS FOR IT TO WORK!
 #define DATE                4    /* Current Date */
@@ -73,10 +77,9 @@
 
 #define SSID_LEN_MAX 32
 #define BSSID_LEN_MAX 6
+#define RECV_BUF_SIZE 1460
 
 int set_time();
-char* GetLeaderboard();
-void PrintLeaderboard(char* msg);
-// char* CalcLeaderboard();
+int GetLeaderboard(int iTLSSockID, char *acRecvbuff);
 int http_post(int iTLSSockID, char* msg);
 int http_get(int iTLSSockID, char* buf);

@@ -26,6 +26,8 @@ void ClearSongInfo(int songIdx);
 void DrawBugle(int currPos, unsigned char reset);
 void DrawNotes(unsigned char reset);
 void DrawScore(unsigned int uScore);
+void DrawMsg(int x, int y, char* msg);
+void DrawLeaderboard(char* leaderboard);
 
 /* GIMP RGB C-Source image dump (miku.c) */
 static const Sprite miku = {
@@ -1951,6 +1953,7 @@ static const Sprite leaderboard = {
   "$\210$\210$\210$\210$\210$\210$\210$\210$\210#H#H#H$\210$\210$\210$\210$"
   "\210$\210$\210",
 };
+
 
 
 #endif // __DRAWING_H__

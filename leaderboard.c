@@ -1,4 +1,4 @@
-#include "aws.h"
+#include "leaderboard.h"
 
 // OLED includes
 #include "Adafruit_GFX.h"
@@ -23,8 +23,7 @@ int set_time() {
     return SUCCESS;
 }
 
-char* GetLeaderboard() {
-    char acRecvbuff[1460];
+int Connect() {
     // initialize global default app configuration
     g_app_config.host = SERVER_NAME;
     g_app_config.port = GOOGLE_DST_PORT;
@@ -43,40 +42,111 @@ char* GetLeaderboard() {
         ERR_PRINT(lRetVal);
     }
 
-    http_get(lRetVal, acRecvbuff);
-
-    return &acRecvbuff[237];
+    return lRetVal;
 }
 
-void PrintLeaderboard(char* msg) {
-    // 5 players, leaderboard[i][0] = name, leaderboard[i][1] = score
-    uint8_t i;
-    uint8_t j;
-    uint8_t k;
-    for (i = 0; i < 5; i++) {
-        for (j = 0; j < 2; j++) {
-            for (k = 0; k < 5; k++) {
-                if (*msg == ' ') {
-                    msg++;
-                    break;
-                } else if (*msg == '\0') {
-                    return;
-                }
-                // print word on oled
+int GetLeaderboard(int iTLSSockID, char *acRecvbuff) {
+    acRecvbuff = http_get(iTLSSockID, acRecvbuff);
+    
+    // find the reported leaderboard
+    const char matchReported[8] = "reported";
+    const char matchLeaderboard[11] = "leaderboard";
+    uint8_t reported = 0;
+    uint8_t leaderboard = 0;
+    int idx = 0;
 
-                drawChar((j * 10) + (k * 4), i * 6, *msg, 0xFFFFF, BG_COLOR, 1);
-                msg++;
-                
-            }
-
+    while (reported < 8) {
+        if (acRecvbuff[idx] == matchReported[reported]) {
+            reported++;
+        } else if (acRecvbuff[idx] == '\0') {
+            return -1;
+        } else {
+            reported = 0;
         }
+        idx++;
     }
+    
+    while (leaderboard < 11) {
+        if (acRecvbuff[idx] == matchLeaderboard[leaderboard]) {
+            leaderboard++;
+        } else if (acRecvbuff[idx] == '\0') {
+            return -1;
+        } else {
+            leaderboard = 0;
+        }
+        idx++;
+    }
+    idx += 3; // go to start of string
+
+    return idx;
 }
 
-//char* CalcLeaderboard()
-//
-//void PostLeaderboard(int iTLSSockID, char* msg)
+void GetPlayerName(char* playerName) {
+    NunchukData nd;
+    NunchukRead(&nd);
+}
 
+void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score) {
+    char leaderboardStr[RECV_BUF_SIZE];
+    char *lbPtr = &leaderboardStr[0];
+
+    // get leaderboard
+    int idx = GetLeaderboard(iTLSSockID, leaderboardStr);
+    Report("index of leaderboard: %d\n\r", idx);
+    if (idx < 0) {
+        return;
+    }
+
+    // parse scores
+    char names[5][6];
+    char scores_char[5][5];
+    unsigned int scores[5];
+    uint8_t playerPlaced = 1; // 1 if player placed in top 5
+    uint8_t i;
+    for (i = 0; i < 5; i++) {
+        uint8_t j;
+        for (j = 0; j < 2; j++) {
+            uint8_t k;
+            for (k = 0; k < 5; k++) {
+                if (*lbPtr == ' ') {
+                    lbPtr++;
+                    break;
+                } else if (*lbPtr == '"') {
+                    goto post;
+                } else {
+                    if (j == 0) {
+                        names[i][k] = lbPtr[0];
+                    } else {
+                        scores_char[i][k] = lbPtr[0];
+                    }
+                    lbPtr++;
+                }
+            }
+        }
+
+        // parse score into int
+        scores[i] = 0;
+        for (j = 0; j < 4; j++) {
+            scores[i] *= 10;
+            scores[i] += scores_char[i][j] - '0';
+        }
+        if (g_Score > scores[i]) {
+            playerPlaced = 1;
+            scores[i + 1] = scores[i];
+            scores[i] = g_Score;
+            memcpy(names[i + 1], names[i], 5);
+
+            // ask for player's name
+            char playerName[6];
+            GetPlayerName(playerName);
+            memcpy(names[i], playerName, 5);
+
+            i++;
+        }
+    
+    }
+    post:
+}
 
 int http_post(int iTLSSockID, char* msg){
     char acSendBuff[512];
@@ -127,17 +197,16 @@ int http_post(int iTLSSockID, char* msg){
 
     UART_PRINT(acSendBuff);
 
-
-    //
-    // Send the packet to the server */
-    //
+    // sent GET request
     lRetVal = sl_Send(iTLSSockID, acSendBuff, strlen(acSendBuff), 0);
     if(lRetVal < 0) {
-        UART_PRINT("POST failed. Error Number: %i\n\r",lRetVal);
+        UART_PRINT("GET failed. Error Number: %i\n\r",lRetVal);
         sl_Close(iTLSSockID);
         GPIO_IF_LedOn(MCU_RED_LED_GPIO);
         return lRetVal;
     }
+
+    // get response
     lRetVal = sl_Recv(iTLSSockID, &acRecvbuff[0], sizeof(acRecvbuff), 0);
     if(lRetVal < 0) {
         UART_PRINT("Received failed. Error Number: %i\n\r",lRetVal);
@@ -154,9 +223,9 @@ int http_post(int iTLSSockID, char* msg){
     return 0;
 }
 
-int http_get(int iTLSSockID, char* buf){
+int http_get(int iTLSSockID, char* acRecvbuff){
     char acSendBuff[512];
-    char acRecvbuff[1460];
+    // char acRecvbuff[1460];
     char cCLLength[200];
     char* pcBufHeaders;
     int lRetVal = 0;
@@ -183,7 +252,8 @@ int http_get(int iTLSSockID, char* buf){
         GPIO_IF_LedOn(MCU_RED_LED_GPIO);
         return lRetVal;
     }
-    lRetVal = sl_Recv(iTLSSockID, &acRecvbuff[0], sizeof(acRecvbuff), 0);
+    UART_PRINT("successfully sent GET request\n\r");
+    lRetVal = sl_Recv(iTLSSockID, &acRecvbuff[0], 1460UL, 0);
     if(lRetVal < 0) {
         UART_PRINT("Received failed. Error Number: %i\n\r",lRetVal);
         //sl_Close(iSSLSockID);
@@ -192,21 +262,16 @@ int http_get(int iTLSSockID, char* buf){
     }
     else {
         acRecvbuff[lRetVal+1] = '\0';
+        UART_PRINT("\n\r\n\r\n\r RECEIVED FROM GET: \n\r");
+        // int i = 0;
+        // for (i = 0; i < lRetVal; i++) {
+        //     UART_PRINT("%c", acRecvbuff[i]);
+        // }
         UART_PRINT(acRecvbuff);
         UART_PRINT("\n\r\n\r");
-        UART_PRINT(acRecvbuff[237]);
-        UART_PRINT("\n\r\n\r");
-        char myChar = acRecvbuff[237];
-        if (myChar == 'O') {
-            fillScreen(0x00000);
-        } else if (myChar == 'M') {
-            fillScreen(0xF8000);
-        } else {
-            fillScreen(0xaaaaa);
-        }
-    }
 
-    return acRecvbuff;
+        return acRecvbuff;
+    }
 }
 
 

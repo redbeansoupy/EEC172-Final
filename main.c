@@ -72,6 +72,7 @@
 #include "buzzer.h"
 #include "notes.h"
 #include "drawing.h"
+#include "leaderboard.h"
 
 //*****************************************************************************
 //                      MACRO DEFINITIONS
@@ -197,6 +198,14 @@ void main()
     NunchukData nd;
     NunchukHandshake();
 
+    // connecting to internet
+    fillScreen(BG_COLOR);
+    DrawMsg(10, 60, "connecting to server...");
+    int iTLSSockID = -1;
+    while (iTLSSockID < 0) {
+        iTLSSockID = Connect();
+    }
+
     // ****************************************** //
     //  GAME LOOP (Title -> Game -> Leaderboard)  //
     // ****************************************** //
@@ -209,32 +218,38 @@ void main()
 
     // reset static variables
     PlayMenuMusic(1);
-    GetLeaderboard();
 
     // TITLE SCREEN LOOP
     while(TitleScreenLoop(nd));
 
     // ==================== GAME !!!! =======================
 
-    // reset static variables
-    DrawNotes(1);
-    PlayBackingTrack(1);
-    CalcScore(0, 0, 1);
-    DrawBugle(0, 1);
-    g_Score = 0;
+    // // reset static variables
+    // DrawNotes(1);
+    // PlayBackingTrack(1);
+    // CalcScore(0, 0, 1);
+    // DrawBugle(0, 1);
+    // g_Score = 0;
 
-    // clear screen and draw miku
-    fillScreen(BG_COLOR);
-    DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
-    DrawScore(g_Score);
+    // // clear screen and draw miku
+    // fillScreen(BG_COLOR);
+    // DrawSprite((const Sprite*) &miku, OLED_WIDTH - miku.width, OLED_HEIGHT - miku.height, BG_COLOR);
+    // DrawScore(g_Score);
 
-    // give 3s for song to start
-    g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 3000;
+    // // give 3s for song to start
+    // g_startTimeMS = (PRCMSlowClkCtrGet() * 1000) / 32768 + 3000;
 
-    // GAMEPLAY LOOP
-    while(GameplayLoop(nd));
+    // // GAMEPLAY LOOP
+    // while(GameplayLoop(nd));
 
-    // ============== TODO: LEADERBOARD =============================
+    // ============== LEADERBOARD =============================
+
+    
+    uint8_t z = 1;
+    while (z == 1) {
+        NunchukRead(&nd);
+        z = nd.button_z;
+    }
 
 }
 }
