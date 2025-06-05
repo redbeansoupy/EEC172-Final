@@ -66,10 +66,10 @@
 #define DATA1 "{" \
             "\"state\": {\r\n"                                              \
                 "\"desired\" : {\r\n"                                       \
-                    "\"leaderboard\" : [\""
+                    "\"leaderboard\" : \""
 
 // DATA2 is the second part of the JSON to post, after the desired message
-#define DATA2 "]\"\r\n"                                            \
+#define DATA2 "\r\n"                                            \
                 "}"                                                         \
             "}"                                                             \
         "}\r\n\r\n"

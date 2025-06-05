@@ -48,20 +48,20 @@ int Connect() {
 int GetLeaderboard(int iTLSSockID, char *acRecvbuff) {
     acRecvbuff = http_get(iTLSSockID, acRecvbuff);
     
-    // find the reported leaderboard
-    const char matchReported[8] = "reported";
+    // find the desired leaderboard
+    const char matchDesired[7] = "desired";
     const char matchLeaderboard[11] = "leaderboard";
-    uint8_t reported = 0;
+    uint8_t desired = 0;
     uint8_t leaderboard = 0;
     int idx = 0;
 
-    while (reported < 8) {
-        if (acRecvbuff[idx] == matchReported[reported]) {
-            reported++;
+    while (desired < 7) {
+        if (acRecvbuff[idx] == matchDesired[desired]) {
+            desired++;
         } else if (acRecvbuff[idx] == '\0') {
             return -1;
         } else {
-            reported = 0;
+            desired = 0;
         }
         idx++;
     }
@@ -259,6 +259,8 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboar
     }
     newLeaderboardStr[idx] = '"'; // for how the draw function parses the string
     newLeaderboardStr[idx + 1] = '\0';
+
+    http_post(iTLSSockID, newLeaderboardStr);
                 
 }
 
