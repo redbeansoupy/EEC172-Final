@@ -200,7 +200,8 @@ void main()
 
     // connecting to internet
     fillScreen(BG_COLOR);
-    DrawMsg(10, 60, "connecting to server...");
+    DrawMsg(25, 60, "connecting to");
+    DrawMsg(35, 68, "server...");
     int iTLSSockID = -1;
     while (iTLSSockID < 0) {
         iTLSSockID = Connect();

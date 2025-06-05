@@ -119,6 +119,10 @@ void GetPlayerName(char* playerName) {
     static unsigned char wasLeft, wasRight, wasPressed;
     
     fillScreen(BG_COLOR);
+    DrawMsg(15, 10, "what's your name?");
+    DrawMsg(20, 90, "use joystick to");
+    DrawMsg(25, 98, "select letter");
+    DrawMsg(10, 110, "press z to confirm");
 
     for (charIdx = 0; charIdx < 3; charIdx++) {
         while (true) {
@@ -140,7 +144,7 @@ void GetPlayerName(char* playerName) {
                 wasRight = 0;
             }
 
-            drawChar(charIdx * 12 + 50, 60, alphabet[alphaIdx], 0xFFFFF, BG_COLOR, 2);
+            drawChar(charIdx * 12 + 45, 50, alphabet[alphaIdx], 0xFFFFF, BG_COLOR, 2);
             if (nd.button_z == 0 && !wasPressed) {
                 playerName[charIdx] = alphabet[alphaIdx];
                 wasPressed = 1;

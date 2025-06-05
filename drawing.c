@@ -153,6 +153,7 @@ void DrawMsg(int x, int y, char* msg) {
 
 void DrawLeaderboard(char* leaderboardStr) {
     DrawSprite((const Sprite*) &leaderboard, 0, 0, 0x0000);
+    DrawMsg(8, 115, "press z to continue");
 
     // 5 players, leaderboard[i][0] = name, leaderboard[i][1] = score
     uint8_t i;
