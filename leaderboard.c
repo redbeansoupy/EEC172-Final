@@ -173,7 +173,8 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_song
     char scores_char[5][5];
     unsigned int scores[5];
     int playerPlace = -1; // 0 for first place
-    int i, lbLen; // i needs to be signed
+    int i; // i needs to be signed
+    int lbLen = 0;
 
     for (i = 0; i < 5; i++) {
         uint8_t j;
@@ -188,11 +189,11 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_song
                     } else {
                         scores_char[i][k] = '\0';
                         Report("Placed null on scores_char[%d][%d]\n\r", i, k);
+                        lbLen += 1;
                     }
                     break;
                 } else if (*lbPtr == '"') {
                     Report("Detected end of str: i = %d, j = %d, k = %d\n\r", i, j, k);
-                    lbLen = i + 1;
                     if (j == 0) {
                         names[i][k] = '\0';
                         Report("Placed null on names[%d][%d]\n\r", i, k);
@@ -200,6 +201,7 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_song
                     } else {
                         scores_char[i][k] = '\0';
                         Report("Placed null on scores_char[%d][%d]\n\r", i, k);
+                        lbLen += 1;
                     }
                     goto post;
                 } else {
@@ -236,7 +238,7 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, unsigned int g_song
     }
     if (playerPlace >= 0) {
         for (i = lbLen - 2; i >= playerPlace; i--) {
-            Report("moved score\n\r");
+            Report("moved score, lbLen = %u, i = %u\n\r", lbLen, i);
             scores[i + 1] = scores[i];
             memcpy(scores_char[i + 1], scores_char[i], 5);
             memcpy(names[i + 1], names[i], 5);
