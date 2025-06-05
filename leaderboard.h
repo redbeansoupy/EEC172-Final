@@ -43,8 +43,8 @@
 #define DATE                5    /* Current Date */
 #define MONTH               6     /* Month 1-12 */
 #define YEAR                2025  /* Current year */
-#define HOUR                3    /* Time - hours */
-#define MINUTE              9    /* Time - minutes */
+#define HOUR                8    /* Time - hours */
+#define MINUTE              46    /* Time - minutes */
 #define SECOND              0     /* Time - seconds */
 
 

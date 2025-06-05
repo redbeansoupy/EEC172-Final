@@ -182,12 +182,12 @@ void CalcScore(unsigned char dir, int buglePos, unsigned char reset) {
             GPIOPinWrite(GPIOA3_BASE, 0x80, 0); // GREEN
             GPIOPinWrite(GPIOA3_BASE, 0x40, 0); // BLUE
             if (diff < 75) {         // great
-                g_Score += 10;
-                noteScore += 10;
+                g_Score += 5;
+                noteScore += 5;
                 GPIOPinWrite(GPIOA3_BASE, GREEN_LED, GREEN_LED);
             } else if (diff < 150) { // ok
-                g_Score += 3;
-                noteScore += 3;
+                g_Score += 2;
+                noteScore += 2;
                 GPIOPinWrite(GPIOA3_BASE, BLUE_LED, BLUE_LED);
             } else {                 // bad
             }
