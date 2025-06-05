@@ -209,6 +209,7 @@ void main()
 
     // reset static variables
     PlayMenuMusic(1);
+    GetLeaderboard();
 
     // TITLE SCREEN LOOP
     while(TitleScreenLoop(nd));
@@ -234,6 +235,7 @@ void main()
     while(GameplayLoop(nd));
 
     // ============== TODO: LEADERBOARD =============================
+
 }
 }
 
