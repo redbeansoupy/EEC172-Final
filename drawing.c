@@ -135,7 +135,7 @@ void DrawScore(unsigned int uScore) {
     unsigned char x = OLED_WIDTH - 19;
     unsigned char y = OLED_HEIGHT - miku.height - 8;
     unsigned char hundred = uScore / 100;
-    unsigned char ten = (uScore / 10) % 10;
+    unsigned char ten = (uScore % 100) / 10;
     unsigned char one = uScore % 10;
 
     drawChar(x, y, digits[hundred], 0xFFFFF, BG_COLOR, 1);
@@ -169,7 +169,7 @@ void DrawLeaderboard(char* leaderboardStr) {
                 }
                 // print word on oled
 
-                drawChar((j * 30) + (k * 6) + 45, i * 14 + 50, *leaderboardStr, 0xFFFFF, BG_COLOR, 1);
+                drawChar((j * 30) + (k * 6) + 40, i * 14 + 50, *leaderboardStr, 0xFFFFF, BG_COLOR, 1);
                 leaderboardStr++;
                 
             }

@@ -82,27 +82,75 @@ int GetLeaderboard(int iTLSSockID, char *acRecvbuff) {
 }
 
 void GetPlayerName(char* playerName) {
+    Report("getting player name\n\r");
+    const char alphabet[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 
+                            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 
+                            'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
     NunchukData nd;
-    NunchukRead(&nd);
+    
+
+    uint8_t charIdx = 0;
+    uint8_t alphaIdx = 0;
+    static unsigned char wasLeft, wasRight, wasPressed;
+    
+    fillScreen(BG_COLOR);
+
+    for (charIdx = 0; charIdx < 3; charIdx++) {
+        while (true) {
+            NunchukRead(&nd);
+
+            // joystick left
+            if (nd.joystick_y < 40 && !wasLeft) {
+                wasLeft = 1;
+                if (alphaIdx-- == 0) alphaIdx = 25;
+            } else if (nd.joystick_y >= 40 && wasLeft) {
+                wasLeft = 0;
+            }
+    
+            // joystick right
+            if (nd.joystick_y > 207 && !wasRight) {
+                wasRight = 1;
+                if (++alphaIdx == 26) alphaIdx = 0;
+            } else if (nd.joystick_y <= 207 && wasRight) {
+                wasRight = 0;
+            }
+
+            drawChar(charIdx * 12 + 50, 60, alphabet[alphaIdx], 0xFFFFF, BG_COLOR, 2);
+            if (nd.button_z == 0 && !wasPressed) {
+                playerName[charIdx] = alphabet[alphaIdx];
+                wasPressed = 1;
+                break;
+            } else if (nd.button_z == 1) {
+                wasPressed = 0;
+            }
+
+        }
+    }
+    playerName[3] = '\0';
+    Report("Got player name: %s\n\r", playerName);
+
 }
 
-void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score) {
+void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboardStr) {
     char leaderboardStr[RECV_BUF_SIZE];
-    char *lbPtr = &leaderboardStr[0];
-
+    Report("Using score %d\n\r", g_Score);
+    
     // get leaderboard
     int idx = GetLeaderboard(iTLSSockID, leaderboardStr);
     Report("index of leaderboard: %d\n\r", idx);
     if (idx < 0) {
         return;
     }
-
+    char *lbPtr = &leaderboardStr[idx];
+    
     // parse scores
-    char names[5][6];
+    char names[5][5];
     char scores_char[5][5];
     unsigned int scores[5];
-    uint8_t playerPlaced = 1; // 1 if player placed in top 5
-    uint8_t i;
+    int playerPlace = -1; // 0 for first place
+    int i, lbLen; // i needs to be signed
+
     for (i = 0; i < 5; i++) {
         uint8_t j;
         for (j = 0; j < 2; j++) {
@@ -110,8 +158,25 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score) {
             for (k = 0; k < 5; k++) {
                 if (*lbPtr == ' ') {
                     lbPtr++;
+                    if (j == 0) {
+                        names[i][k] = '\0';
+                        Report("Placed null on names[%d][%d]\n\r", i, k);
+                    } else {
+                        scores_char[i][k] = '\0';
+                        Report("Placed null on scores_char[%d][%d]\n\r", i, k);
+                    }
                     break;
                 } else if (*lbPtr == '"') {
+                    Report("Detected end of str: i = %d, j = %d, k = %d\n\r", i, j, k);
+                    lbLen = i + 1;
+                    if (j == 0) {
+                        names[i][k] = '\0';
+                        Report("Placed null on names[%d][%d]\n\r", i, k);
+
+                    } else {
+                        scores_char[i][k] = '\0';
+                        Report("Placed null on scores_char[%d][%d]\n\r", i, k);
+                    }
                     goto post;
                 } else {
                     if (j == 0) {
@@ -130,22 +195,71 @@ void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score) {
             scores[i] *= 10;
             scores[i] += scores_char[i][j] - '0';
         }
+
         if (g_Score > scores[i]) {
-            playerPlaced = 1;
-            scores[i + 1] = scores[i];
-            scores[i] = g_Score;
-            memcpy(names[i + 1], names[i], 5);
-
-            // ask for player's name
-            char playerName[6];
-            GetPlayerName(playerName);
-            memcpy(names[i], playerName, 5);
-
-            i++;
+            playerPlace = i;
+            Report("Player placed at %d\n\r", i);
         }
-    
     }
+    
     post:
+    // move data if player placed
+    if (lbLen < 5 && playerPlace < 0) {
+        playerPlace = i;
+        Report("Player placed at %d\n\r", i); 
+        lbLen += 1;
+    }
+    if (playerPlace >= 0) {
+        for (i = lbLen - 2; i >= playerPlace; i--) {
+            Report("moved score\n\r");
+            scores[i + 1] = scores[i];
+            memcpy(scores_char[i + 1], scores_char[i], 5);
+            memcpy(names[i + 1], names[i], 5);
+        }
+        scores[playerPlace] = g_Score;
+
+        // ask for player's name
+        char playerName[6];
+        GetPlayerName(playerName);
+        memcpy(names[playerPlace], playerName, 4);
+
+        char digits[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char hundred = g_Score / 100;
+        unsigned char ten = (g_Score % 100) / 10;
+        unsigned char one = g_Score % 10;
+        scores_char[playerPlace][0] = hundred + '0';
+        scores_char[playerPlace][1] = ten + '0';
+        scores_char[playerPlace][2] = one + '0';
+        scores_char[playerPlace][3] = '\0';
+    }
+
+    // create the new leaderboardStr
+    if (playerPlace < 0) {
+        memcpy(newLeaderboardStr, &leaderboardStr[idx], 1460);
+    } else {
+        // generate the string for drawing
+        idx = 0;
+        for (i = 0; i < lbLen; i++) {
+            uint8_t j;
+            for (j = 0; j < 5; j++) {
+                if (names[i][j] == '\0') break;
+                newLeaderboardStr[idx] = names[i][j];
+                idx++;
+            }
+            newLeaderboardStr[idx] = ' ';
+            idx++;
+            for (j = 0; j < 5; j++) {
+                if (scores_char[i][j] == '\0') break;
+                newLeaderboardStr[idx] = scores_char[i][j];
+                idx++;
+            }
+            newLeaderboardStr[idx] = ' ';
+            idx++;
+        }
+    }
+    newLeaderboardStr[idx] = '"'; // for how the draw function parses the string
+    newLeaderboardStr[idx + 1] = '\0';
+                
 }
 
 int http_post(int iTLSSockID, char* msg){

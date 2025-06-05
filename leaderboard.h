@@ -80,6 +80,9 @@
 #define RECV_BUF_SIZE 1460
 
 int set_time();
+void GetPlayerName(char* playerName);
+int Connect();
+void UpdateLeaderboard(int iTLSSockID, unsigned int g_Score, char* newLeaderboardStr);
 int GetLeaderboard(int iTLSSockID, char *acRecvbuff);
 int http_post(int iTLSSockID, char* msg);
 int http_get(int iTLSSockID, char* buf);
