@@ -3,3 +3,4 @@
 !*.h
 !/
 !.gitignore
+!cc3200v1p32.cmd
