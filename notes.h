@@ -1,3 +1,26 @@
+/* SONGS: 
+ *
+ * Title Screen - Miracle Paint by OSTER project 
+ * Based on arrangement by user Musesc0rer on musescore
+ * Arrangement: https://musescore.com/user/941151/scores/1475131
+ * User Profile: https://musescore.com/user/941151
+ * 
+ * Track 1: Toreador March by Georges Bizet
+ * Based on arrangement by user NECROMANCER on onlinesequencer.net
+ * Arrangement: https://onlinesequencer.net/1347793
+ * User Profile: https://onlinesequencer.net/members/36567
+ * 
+ * Track 2: Ditto by NewJeans
+ * Based on arrangement by user blueberrieszn IS BACK on musescore 
+ * Arrangement: https://musescore.com/user/36964839/scores/9351625
+ * User Profile: https://musescore.com/user/36964839
+ * 
+ * Track 3: World is Mine by ryo (supercell) 
+ * Based on arrangement by user legend57961 on musescore
+ * Arrangement: https://musescore.com/user/235731/scores/237176
+ * User Profile: https://musescore.com/user/235731
+ * 
+*/
 #ifndef __NOTES_H__
 #define __NOTES_H__
 
