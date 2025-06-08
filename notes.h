@@ -19,8 +19,7 @@
  * Based on arrangement by user legend57961 on musescore
  * Arrangement: https://musescore.com/user/235731/scores/237176
  * User Profile: https://musescore.com/user/235731
- * 
-*/
+ */
 #ifndef __NOTES_H__
 #define __NOTES_H__
 
