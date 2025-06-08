@@ -4,3 +4,6 @@
 !/
 !.gitignore
 !cc3200v1p32.cmd
+
+!README.md
+!index.html
