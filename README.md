@@ -1,4 +1,4 @@
-# Bugle Champ! EEC172 Final Project
+# Bugle Champ!
 Luna Park & Victoria Lam
 
 ## Project Description
@@ -15,27 +15,32 @@ All tracks are based on arrangements of existing songs, which have then been mod
 ### Title Screen - Miracle Paint by OSTER project 
 Based on arrangement by user Musesc0rer on musescore
 
-Arrangement: https://musescore.com/user/941151/scores/1475131
+Arrangement: [https://musescore.com/user/941151/scores/1475131](https://musescore.com/user/941151/scores/1475131)
 
-User Profile: https://musescore.com/user/941151
+User Profile: [https://musescore.com/user/941151](https://musescore.com/user/941151)
+
 
 ### Track 1: Toreador March by Georges Bizet
 Based on arrangement by user NECROMANCER on onlinesequencer.net
 
-Arrangement: https://onlinesequencer.net/1347793
+Arrangement: [https://onlinesequencer.net/1347793](https://onlinesequencer.net/1347793)
 
-User Profile: https://onlinesequencer.net/members/36567
+
+User Profile: [https://onlinesequencer.net/members/36567](https://onlinesequencer.net/members/36567)
 
 ### Track 2: Ditto by NewJeans
 Based on arrangement by user blueberrieszn IS BACK on musescore 
 
-Arrangement: https://musescore.com/user/36964839/scores/9351625
+Arrangement: [https://musescore.com/user/36964839/scores/9351625](https://musescore.com/user/36964839/scores/9351625)
 
-User Profile: https://musescore.com/user/36964839
+
+User Profile: [https://musescore.com/user/36964839](https://musescore.com/user/36964839)
+
 
 ### Track 3: World is Mine by ryo (supercell) 
 Based on arrangement by user legend57961 on musescore
 
-Arrangement: https://musescore.com/user/235731/scores/237176
+Arrangement: [https://musescore.com/user/235731/scores/237176](https://musescore.com/user/235731/scores/237176)
 
-User Profile: https://musescore.com/user/235731
+User Profile:[https://musescore.com/user/235731](https://musescore.com/user/235731)
+
