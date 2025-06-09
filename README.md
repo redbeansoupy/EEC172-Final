@@ -9,14 +9,6 @@ Visually and sonically, the game draws inspiration from retro arcade aesthetics,
 ## Video Demo
 <iframe width="560" height="315" src="https://www.youtube.com/embed/wubIUXXSRbA?si=0LxykFJFqGcmzSU8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-## Description
-
-The prototype developed in this project is a rhythm game where players use a Nintendo Nunchuk to control the pitch and timing of an on-screen bugle. Like other rhythm games, it includes a song selection menu and a leaderboard for each track. The gameplay cycles through three main stages: song selection, the main game, and leaderboard display. During the main game, players aim to match their pitch and timing as closely as possible to the prescribed notes (beatmap) to earn a high score.
-
-The game draws inspiration from retro arcade aesthetics and the rhythm game **Trombone Champ**, extending it by using the Nintendo Nunchuk for pitch control and optionally a microphone for timing through blowing.
-
-
-
 ## Design
 
 ### Functional Specification
