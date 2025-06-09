@@ -13,13 +13,13 @@ Visually and sonically, the game draws inspiration from retro arcade aesthetics,
 
 ### Functional Specification
 
-![State Diagram](images/172_statediagram.png)
+<img src="images/172_statediagram.png" width=360>
+
 
 The game cycles through three states: title screen and song select, main game, and leaderboard display. The specific version of the game depends on the song selected. Gameplay is mostly offline, but leaderboard display requires Wi-Fi to access AWS.
 
 ### System Architecture
-
-![Hardware Diagram](images/172_hwdiagram.png)
+<img src="images/172_hwdiagram.png" width=460>
 
 The CC3200 board acts as the master for all peripherals:
 
@@ -34,7 +34,7 @@ The CC3200 board acts as the master for all peripherals:
 
 ## Implementation
 ### Circuit Diagram
-![Hardware Diagram](images/lunas_awesome.png)
+<img src="images/lunas_awesome.png" width=560>
 
 
 ### Reading Nunchuk Data
