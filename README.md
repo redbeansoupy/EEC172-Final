@@ -33,6 +33,9 @@ The CC3200 board acts as the master for all peripherals:
 ---
 
 ## Implementation
+### Circuit Diagram
+![Hardware Diagram](images/lunas_awesome.png)
+
 
 ### Reading Nunchuk Data
 
